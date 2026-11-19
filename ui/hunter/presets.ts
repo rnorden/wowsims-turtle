@@ -35,6 +35,7 @@ import BMAPL from './apls/bm.apl.json';
 import P1APL from './apls/p1.apl.json';
 import BMPreBISGear from './gear_sets/bm_prebis.gear.json';
 import BMPreBISNoT05ExaltedGear from './gear_sets/bm_prebis_no_t05_exalted.gear.json';
+import CurrentEadiGear from './gear_sets/current-eadi.gear.json';
 import P0BISGear from './gear_sets/p0.bis.gear.json';
 import P1BISGear from './gear_sets/p1.bis.gear.json';
 
@@ -49,11 +50,12 @@ import P1BISGear from './gear_sets/p1.bis.gear.json';
 export const GearBMPreBIS = PresetUtils.makePresetGear('BM Pre-BiS', BMPreBISGear);
 // Same method, without Tier 0.5 (dungeon set 2) pieces and exalted reputation rewards.
 export const GearBMPreBISNoT05Exalted = PresetUtils.makePresetGear('BM Pre-BiS (no T0.5/exalted)', BMPreBISNoT05ExaltedGear);
+export const GearCurrentEadi = PresetUtils.makePresetGear('current-eadi', CurrentEadiGear);
 export const GearP0BIS = PresetUtils.makePresetGear('Pre-BiS', P0BISGear);
 export const GearP1BIS = PresetUtils.makePresetGear('P1 BiS', P1BISGear);
 
 export const GearPresets = {
-	[Phase.Phase1]: [GearBMPreBIS, GearBMPreBISNoT05Exalted, GearP0BIS, GearP1BIS],
+	[Phase.Phase1]: [GearBMPreBIS, GearBMPreBISNoT05Exalted, GearCurrentEadi, GearP0BIS, GearP1BIS],
 };
 
 export const DefaultGear = GearBMPreBIS;
