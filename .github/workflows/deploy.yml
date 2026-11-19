@@ -3,6 +3,7 @@ on:
     push:
         branches:
             - master
+            - hunter-turtle-port
     workflow_dispatch:
 jobs:
     build-and-deploy:
