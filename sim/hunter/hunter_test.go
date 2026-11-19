@@ -21,7 +21,7 @@ func TestBMHunter(t *testing.T) {
 			OtherRaces: []proto.Race{proto.Race_RaceDwarf},
 
 			Talents:     BMTalents,
-			GearSet:     core.GetGearSet("../../ui/hunter/gear_sets", "p0.bis"),
+			GearSet:     core.GetGearSet("../../ui/hunter/gear_sets", "bm_prebis"),
 			Rotation:    core.GetAplRotation("../../ui/hunter/apls", "bm"),
 			Buffs:       core.FullBuffs,
 			Consumes:    P1Consumes,
