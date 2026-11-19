@@ -20,9 +20,12 @@ func TestBMHunter(t *testing.T) {
 			Race:       proto.Race_RaceOrc,
 			OtherRaces: []proto.Race{proto.Race_RaceDwarf},
 
-			Talents:     BMTalents,
-			GearSet:     core.GetGearSet("../../ui/hunter/gear_sets", "bm_prebis"),
-			Rotation:    core.GetAplRotation("../../ui/hunter/apls", "bm"),
+			Talents:  BMTalents,
+			GearSet:  core.GetGearSet("../../ui/hunter/gear_sets", "bm_prebis"),
+			Rotation: core.GetAplRotation("../../ui/hunter/apls", "bm"),
+			OtherRotations: []core.RotationCombo{
+				core.GetAplRotation("../../ui/hunter/apls", "bm_nobuffs"),
+			},
 			Buffs:       core.FullBuffs,
 			Consumes:    P1Consumes,
 			SpecOptions: core.SpecOptionsCombo{Label: "Hunter", SpecOptions: P1PlayerOptions},

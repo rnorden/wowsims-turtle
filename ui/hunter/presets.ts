@@ -32,7 +32,9 @@ import {
 } from '../core/proto/hunter.js';
 import { SavedTalents } from '../core/proto/ui.js';
 import BMAPL from './apls/bm.apl.json';
+import BMNoBuffsAPL from './apls/bm_nobuffs.apl.json';
 import P1APL from './apls/p1.apl.json';
+import BMNoBuffsGear from './gear_sets/bm_nobuffs.gear.json';
 import BMPreBISGear from './gear_sets/bm_prebis.gear.json';
 import BMPreBISNoT05ExaltedGear from './gear_sets/bm_prebis_no_t05_exalted.gear.json';
 import CurrentEadiGear from './gear_sets/current-eadi.gear.json';
@@ -50,12 +52,14 @@ import P1BISGear from './gear_sets/p1.bis.gear.json';
 export const GearBMPreBIS = PresetUtils.makePresetGear('BM Pre-BiS', BMPreBISGear);
 // Same method, without Tier 0.5 (dungeon set 2) pieces and exalted reputation rewards.
 export const GearBMPreBISNoT05Exalted = PresetUtils.makePresetGear('BM Pre-BiS (no T0.5/exalted)', BMPreBISNoT05ExaltedGear);
+// Best of the BM pre-raid alternatives without buffs/consumables (slow bow; see the no-buffs rotation).
+export const GearBMNoBuffs = PresetUtils.makePresetGear('BM no-buffs', BMNoBuffsGear);
 export const GearCurrentEadi = PresetUtils.makePresetGear('current-eadi', CurrentEadiGear);
 export const GearP0BIS = PresetUtils.makePresetGear('Pre-BiS', P0BISGear);
 export const GearP1BIS = PresetUtils.makePresetGear('P1 BiS', P1BISGear);
 
 export const GearPresets = {
-	[Phase.Phase1]: [GearBMPreBIS, GearBMPreBISNoT05Exalted, GearCurrentEadi, GearP0BIS, GearP1BIS],
+	[Phase.Phase1]: [GearBMPreBIS, GearBMPreBISNoT05Exalted, GearBMNoBuffs, GearCurrentEadi, GearP0BIS, GearP1BIS],
 };
 
 export const DefaultGear = GearBMPreBIS;
@@ -64,11 +68,14 @@ export const DefaultGear = GearBMPreBIS;
 //                                 APL Presets
 ///////////////////////////////////////////////////////////////////////////
 
-export const APLBM = PresetUtils.makePresetAPLRotation('Beast Mastery', BMAPL);
+// Buffed: full shot priority, expensive shots only above 10% mana.
+export const APLBM = PresetUtils.makePresetAPLRotation('Beast Mastery (buffed)', BMAPL);
+// No buffs: mana-starved, so no Serpent Sting and Aimed/Multi/Arcane only above 60% mana; Steady Shot fills.
+export const APLBMNoBuffs = PresetUtils.makePresetAPLRotation('Beast Mastery (no buffs)', BMNoBuffsAPL);
 export const APLP1 = PresetUtils.makePresetAPLRotation('Marksmanship', P1APL);
 
 export const APLPresets = {
-	[Phase.Phase1]: [APLBM, APLP1],
+	[Phase.Phase1]: [APLBM, APLBMNoBuffs, APLP1],
 };
 
 export const DefaultAPL = APLPresets[Phase.Phase1][0];
@@ -167,7 +174,7 @@ export const SettingsNoBuffs = PresetUtils.makePresetEncounter('no-buffs', undef
 	consumes: Consumes.create(),
 });
 
-export const BuildNoBuffs = PresetUtils.makePresetBuild('no-buffs', { encounter: SettingsNoBuffs });
+export const BuildNoBuffs = PresetUtils.makePresetBuild('no-buffs', { encounter: SettingsNoBuffs, rotation: APLBMNoBuffs, gear: GearBMNoBuffs });
 
 // Typical raid group buffs and personal consumables, without world buffs.
 export const SettingsRaidBuffs = PresetUtils.makePresetEncounter('raid-buffs', undefined, {
@@ -195,7 +202,7 @@ export const SettingsRaidBuffs = PresetUtils.makePresetEncounter('raid-buffs', u
 	}),
 });
 
-export const BuildRaidBuffs = PresetUtils.makePresetBuild('raid-buffs', { encounter: SettingsRaidBuffs });
+export const BuildRaidBuffs = PresetUtils.makePresetBuild('raid-buffs', { encounter: SettingsRaidBuffs, rotation: APLBM });
 
 export const OtherDefaults = {
 	distanceFromTarget: 12,
