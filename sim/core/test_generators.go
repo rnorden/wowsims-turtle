@@ -407,6 +407,9 @@ type CharacterSuiteConfig struct {
 	InFrontOfTarget bool
 	InfiniteMana    bool
 
+	// Distance from the target in yards. Defaults to 5 (melee range) when unset.
+	DistanceFromTarget float64
+
 	OtherRaces       []proto.Race
 	OtherGearSets    []GearSetCombo
 	OtherSpecOptions []SpecOptionsCombo
@@ -437,6 +440,11 @@ func FullCharacterTestSuiteGenerator(configs []CharacterSuiteConfig) []TestGener
 		allRotations := append(config.OtherRotations, config.Rotation)
 		allConsumeOptions := append(config.OtherConsumes, config.Consumes)
 
+		distanceFromTarget := config.DistanceFromTarget
+		if distanceFromTarget == 0 {
+			distanceFromTarget = 5
+		}
+
 		defaultPlayer := WithSpec(
 			&proto.Player{
 				Class:         config.Class,
@@ -449,7 +457,7 @@ func FullCharacterTestSuiteGenerator(configs []CharacterSuiteConfig) []TestGener
 				Rotation:      config.Rotation.Rotation,
 
 				InFrontOfTarget:    config.InFrontOfTarget,
-				DistanceFromTarget: 5,
+				DistanceFromTarget: distanceFromTarget,
 				ReactionTimeMs:     150,
 				ChannelClipDelayMs: 50,
 				InfiniteMana:       config.InfiniteMana,

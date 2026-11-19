@@ -7,11 +7,12 @@ import (
 	"github.com/isfir/wowsims-turtle/sim/core/proto"
 )
 
+// Turtle WoW Arcane Shot deals a percentage of ranged weapon damage plus flat Arcane damage.
 func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.SpellConfig {
 	spellId := [9]int32{0, 3044, 14281, 14282, 14283, 14284, 14285, 14286, 14287}[rank]
-	baseDamage := [9]float64{0, 13, 21, 33, 59, 83, 115, 145, 183}[rank]
-	spellCoeff := [9]float64{0, .204, .3, .429, .429, .429, .429, .429, .429}[rank]
-	manaCost := [9]float64{0, 25, 35, 50, 80, 105, 135, 160, 190}[rank]
+	baseDamage := [9]float64{0, 10, 17, 29, 48, 71, 101, 129, 166}[rank]
+	weaponMultiplier := [9]float64{0, .10, .15, .20, .25, .30, .35, .40, .45}[rank]
+	manaCost := [9]float64{0, 20, 25, 35, 55, 70, 90, 105, 125}[rank]
 	level := [9]int{0, 6, 12, 20, 28, 36, 44, 52, 60}[rank]
 
 	return core.SpellConfig{
@@ -24,7 +25,7 @@ func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.Spel
 		CastType:      proto.CastType_CastTypeRanged,
 		Rank:          rank,
 		RequiredLevel: level,
-		MissileSpeed:  24,
+		MissileSpeed:  40,
 
 		ManaCost: core.ManaCostOptions{
 			FlatCost: manaCost,
@@ -36,7 +37,7 @@ func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.Spel
 			IgnoreHaste: true,
 			CD: core.Cooldown{
 				Timer:    timer,
-				Duration: time.Second*6 - time.Millisecond*200*time.Duration(hunter.Talents.ImprovedArcaneShot),
+				Duration: time.Second*6 - time.Millisecond*500*time.Duration(hunter.Talents.Swiftshot),
 			},
 		},
 		ExtraCastCondition: func(sim *core.Simulation, target *core.Unit) bool {
@@ -47,10 +48,10 @@ func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.Spel
 
 		DamageMultiplier: 1,
 		ThreatMultiplier: 1,
-		BonusCoefficient: spellCoeff,
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
-			result := spell.CalcDamage(sim, target, baseDamage, spell.OutcomeRangedHitAndCrit)
+			damage := weaponMultiplier*hunter.rangedWeaponDamage(sim, spell, target, false) + baseDamage
+			result := spell.CalcDamage(sim, target, damage, spell.OutcomeRangedHitAndCrit)
 
 			spell.WaitTravelTime(sim, func(sim *core.Simulation) {
 				spell.DealDamage(sim, result)
@@ -59,11 +60,11 @@ func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.Spel
 	}
 }
 
-func (hunter *Hunter) registerArcaneShotSpell(timer *core.Timer) {
-	maxRank := 8
+func (hunter *Hunter) registerArcaneShotSpell() {
+	timer := hunter.NewTimer()
 
-	for i := 1; i <= maxRank; i++ {
-		config := hunter.getArcaneShotConfig(i, timer)
+	for rank := 1; rank <= 8; rank++ {
+		config := hunter.getArcaneShotConfig(rank, timer)
 
 		if config.RequiredLevel <= int(hunter.Level) {
 			hunter.ArcaneShot = hunter.GetOrRegisterSpell(config)

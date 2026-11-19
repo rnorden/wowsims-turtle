@@ -19,11 +19,22 @@ func (hunter *Hunter) registerRapidFire() {
 		ActionID: actionID,
 		Duration: time.Second * 15,
 
+		// Turtle WoW: +40% attack speed, and -40% cast time on Aimed Shot and Steady Shot.
 		OnGain: func(aura *core.Aura, sim *core.Simulation) {
-			aura.Unit.MultiplyRangedSpeed(sim, 1.4)
+			aura.Unit.MultiplyAttackSpeed(sim, 1.4)
+			for _, spell := range []*core.Spell{hunter.AimedShot, hunter.SteadyShot} {
+				if spell != nil {
+					spell.CastTimeMultiplier *= 0.6
+				}
+			}
 		},
 		OnExpire: func(aura *core.Aura, sim *core.Simulation) {
-			aura.Unit.MultiplyRangedSpeed(sim, 1/1.4)
+			aura.Unit.MultiplyAttackSpeed(sim, 1/1.4)
+			for _, spell := range []*core.Spell{hunter.AimedShot, hunter.SteadyShot} {
+				if spell != nil {
+					spell.CastTimeMultiplier /= 0.6
+				}
+			}
 		},
 	})
 

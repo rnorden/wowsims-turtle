@@ -31,6 +31,7 @@ import {
 	Hunter_Options_QuiverBonus,
 } from '../core/proto/hunter.js';
 import { SavedTalents } from '../core/proto/ui.js';
+import BMAPL from './apls/bm.apl.json';
 import P1APL from './apls/p1.apl.json';
 import P0BISGear from './gear_sets/p0.bis.gear.json';
 import P1BISGear from './gear_sets/p1.bis.gear.json';
@@ -55,10 +56,11 @@ export const DefaultGear = GearP0BIS;
 //                                 APL Presets
 ///////////////////////////////////////////////////////////////////////////
 
+export const APLBM = PresetUtils.makePresetAPLRotation('Beast Mastery', BMAPL);
 export const APLP1 = PresetUtils.makePresetAPLRotation('Marksmanship', P1APL);
 
 export const APLPresets = {
-	[Phase.Phase1]: [APLP1],
+	[Phase.Phase1]: [APLBM, APLP1],
 };
 
 export const DefaultAPL = APLPresets[Phase.Phase1][0];
@@ -70,10 +72,12 @@ export const DefaultAPL = APLPresets[Phase.Phase1][0];
 // Default talents. Uses the talent string format (numeric), make the talents on
 // a talent calculator and copy the numbers in the url.
 
-export const TalentsP1 = PresetUtils.makePresetTalents('Marksmanship', SavedTalents.create({ talentsString: '55000000505-05451002503051' }));
+// Turtle WoW talent trees (BM 19, MM 16, Survival 20 talents).
+export const TalentsBM = PresetUtils.makePresetTalents('Beast Mastery', SavedTalents.create({ talentsString: '5500000152053102251-0505013' }));
+export const TalentsP1 = PresetUtils.makePresetTalents('Marksmanship', SavedTalents.create({ talentsString: '550000005-0505113250123251' }));
 
 export const TalentPresets = {
-	[Phase.Phase1]: [TalentsP1],
+	[Phase.Phase1]: [TalentsBM, TalentsP1],
 };
 
 export const DefaultTalents = TalentPresets[Phase.Phase1][0];

@@ -7,6 +7,9 @@ import (
 	"github.com/isfir/wowsims-turtle/sim/core/proto"
 )
 
+// Multi-Shot and Carve share this cooldown.
+const multiShotCooldown = time.Second * 10
+
 func (hunter *Hunter) getMultiShotConfig(rank int, timer *core.Timer) core.SpellConfig {
 	spellId := [6]int32{0, 2643, 14288, 14289, 14290, 25294}[rank]
 	baseDamage := [6]float64{0, 0, 40, 80, 120, 150}[rank]
@@ -26,15 +29,14 @@ func (hunter *Hunter) getMultiShotConfig(rank int, timer *core.Timer) core.Spell
 		CastType:      proto.CastType_CastTypeRanged,
 		Rank:          rank,
 		RequiredLevel: level,
-		MissileSpeed:  24,
+		MissileSpeed:  30,
 
 		ManaCost: core.ManaCostOptions{
 			FlatCost: manaCost,
 		},
 		Cast: core.CastConfig{
 			DefaultCast: core.Cast{
-				GCD:      core.GCDDefault,
-				CastTime: time.Millisecond * 500,
+				GCD: core.GCDDefault,
 			},
 			ModifyCast: func(sim *core.Simulation, spell *core.Spell, cast *core.Cast) {
 				cast.CastTime = spell.CastTime()
@@ -43,11 +45,9 @@ func (hunter *Hunter) getMultiShotConfig(rank int, timer *core.Timer) core.Spell
 			IgnoreHaste: true, // Hunter GCD is locked at 1.5s
 			CD: core.Cooldown{
 				Timer:    timer,
-				Duration: time.Second * 10,
+				Duration: multiShotCooldown,
 			},
-			CastTime: func(spell *core.Spell) time.Duration {
-				return time.Duration(float64(spell.DefaultCast.CastTime) / hunter.RangedSwingSpeed())
-			},
+			CastTime: hunter.shotCastTime,
 		},
 		ExtraCastCondition: func(sim *core.Simulation, target *core.Unit) bool {
 			return hunter.DistanceFromTarget >= core.MinRangedAttackDistance
@@ -63,9 +63,7 @@ func (hunter *Hunter) getMultiShotConfig(rank int, timer *core.Timer) core.Spell
 			curTarget := target
 
 			for hitIndex := int32(0); hitIndex < numHits; hitIndex++ {
-				baseDamage := baseDamage +
-					hunter.AutoAttacks.Ranged().CalculateNormalizedWeaponDamage(sim, spell.RangedAttackPower(target, false)) +
-					hunter.AmmoDamageBonus
+				baseDamage := baseDamage + hunter.rangedWeaponDamage(sim, spell, target, true)
 
 				results[hitIndex] = spell.CalcDamage(sim, curTarget, baseDamage, spell.OutcomeRangedHitAndCrit)
 

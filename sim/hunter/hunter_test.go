@@ -12,7 +12,7 @@ func init() {
 	RegisterHunter()
 }
 
-func TestP1Hunter(t *testing.T) {
+func TestBMHunter(t *testing.T) {
 	core.RunTestSuite(t, t.Name(), core.FullCharacterTestSuiteGenerator([]core.CharacterSuiteConfig{
 		{
 			Class:      proto.Class_ClassHunter,
@@ -20,12 +20,15 @@ func TestP1Hunter(t *testing.T) {
 			Race:       proto.Race_RaceOrc,
 			OtherRaces: []proto.Race{proto.Race_RaceDwarf},
 
-			Talents:     P1Talents,
+			Talents:     BMTalents,
 			GearSet:     core.GetGearSet("../../ui/hunter/gear_sets", "p0.bis"),
-			Rotation:    core.GetAplRotation("../../ui/hunter/apls", "p1"),
+			Rotation:    core.GetAplRotation("../../ui/hunter/apls", "bm"),
 			Buffs:       core.FullBuffs,
 			Consumes:    P1Consumes,
 			SpecOptions: core.SpecOptionsCombo{Label: "Hunter", SpecOptions: P1PlayerOptions},
+
+			// Shots require at least core.MinRangedAttackDistance.
+			DistanceFromTarget: 25,
 
 			ItemFilter:      ItemFilters,
 			EPReferenceStat: proto.Stat_StatAttackPower,
@@ -34,7 +37,33 @@ func TestP1Hunter(t *testing.T) {
 	}))
 }
 
-var P1Talents = "-05451002503051-33400023023"
+func TestMMHunter(t *testing.T) {
+	core.RunTestSuite(t, t.Name(), core.FullCharacterTestSuiteGenerator([]core.CharacterSuiteConfig{
+		{
+			Class: proto.Class_ClassHunter,
+			Phase: 1,
+			Race:  proto.Race_RaceOrc,
+
+			Talents:     MMTalents,
+			GearSet:     core.GetGearSet("../../ui/hunter/gear_sets", "p0.bis"),
+			Rotation:    core.GetAplRotation("../../ui/hunter/apls", "p1"),
+			Buffs:       core.FullBuffs,
+			Consumes:    P1Consumes,
+			SpecOptions: core.SpecOptionsCombo{Label: "Hunter", SpecOptions: P1PlayerOptions},
+
+			// Shots require at least core.MinRangedAttackDistance.
+			DistanceFromTarget: 25,
+
+			ItemFilter:      ItemFilters,
+			EPReferenceStat: proto.Stat_StatAttackPower,
+			StatsToWeigh:    Stats,
+		},
+	}))
+}
+
+// Must match ui/hunter/presets.ts.
+var BMTalents = "5500000152053102251-0505013"
+var MMTalents = "550000005-0505113250123251"
 
 var P1Consumes = core.ConsumesCombo{
 	Label: "P1-Consumes",

@@ -188,9 +188,16 @@ func (hp *HunterPet) ExecuteCustomRotation(sim *core.Simulation) {
 }
 
 func (hunter *Hunter) makeStatInheritance() core.PetStatInheritance {
+	// Spirit Bond: the pet gains melee attack power equal to 12.5% per rank of the hunter's ranged
+	// attack power, and spell power equal to 7.5% per rank (rank values 12/25 and 7/15 in client data).
+	apScale := []float64{0, 0.12, 0.25}[hunter.Talents.SpiritBond]
+	spScale := []float64{0, 0.07, 0.15}[hunter.Talents.SpiritBond]
+
 	return func(ownerStats stats.Stats) stats.Stats {
-		// No stat inheritance in classic
-		return stats.Stats{}
+		return stats.Stats{
+			stats.AttackPower: ownerStats[stats.RangedAttackPower] * apScale,
+			stats.SpellPower:  ownerStats[stats.RangedAttackPower] * spScale,
+		}
 	}
 }
 

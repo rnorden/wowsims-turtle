@@ -1,0 +1,270 @@
+character_stats_results: {
+ key: "TestMMHunter-Phase1-CharacterStats-Default"
+ value: {
+  final_stats: 233
+  final_stats: 410
+  final_stats: 312
+  final_stats: 113
+  final_stats: 139
+  final_stats: 33
+  final_stats: 0
+  final_stats: 0
+  final_stats: 0
+  final_stats: 0
+  final_stats: 0
+  final_stats: 0
+  final_stats: 37.25
+  final_stats: 1
+  final_stats: 10.4645
+  final_stats: 2
+  final_stats: 0
+  final_stats: 1375
+  final_stats: 6
+  final_stats: 22.749
+  final_stats: 2
+  final_stats: 0
+  final_stats: 0
+  final_stats: 3135
+  final_stats: 0
+  final_stats: 0
+  final_stats: 2462
+  final_stats: 1262
+  final_stats: 0
+  final_stats: 5
+  final_stats: 0
+  final_stats: 0
+  final_stats: 5
+  final_stats: 0
+  final_stats: 4407
+  final_stats: 27
+  final_stats: 60
+  final_stats: 60
+  final_stats: 60
+  final_stats: 60
+  final_stats: 384
+  final_stats: 0
+  final_stats: 185
+  final_stats: 0
+  final_stats: 0
+  final_stats: 0
+ }
+}
+stat_weights_results: {
+ key: "TestMMHunter-Phase1-StatWeights-Default"
+ value: {
+  weights: 0
+  weights: 0.54783
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 5.44421
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0.19597
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+  weights: 0
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-BloodGuard'sChainVices-22862"
+ value: {
+  dps: 650.49745
+  tps: 506.45062
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Champion'sPursuance"
+ value: {
+  dps: 652.50644
+  tps: 505.05084
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-CryptstalkerArmor"
+ value: {
+  dps: 897.60629
+  tps: 735.86135
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-DragonstalkerArmor"
+ value: {
+  dps: 712.52666
+  tps: 565.60261
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-FieldMarshal'sPursuit"
+ value: {
+  dps: 683.68259
+  tps: 540.49413
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-General'sChainGloves-16571"
+ value: {
+  dps: 656.05079
+  tps: 512.91758
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-GiantstalkerArmor"
+ value: {
+  dps: 682.91257
+  tps: 538.28159
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Knight-Lieutenant'sChainVices-23279"
+ value: {
+  dps: 650.49745
+  tps: 506.45062
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-LieutenantCommander'sPursuance"
+ value: {
+  dps: 652.50644
+  tps: 505.05084
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Marshal'sChainGrips-16463"
+ value: {
+  dps: 656.05079
+  tps: 512.91758
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Predator'sArmor"
+ value: {
+  dps: 697.84514
+  tps: 553.92513
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Renataki'sCharmofBeasts-19953"
+ value: {
+  dps: 666.68928
+  tps: 521.33933
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Striker'sGarb"
+ value: {
+  dps: 709.29299
+  tps: 563.00062
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-TheDefiler'sDetermination"
+ value: {
+  dps: 680.29864
+  tps: 534.49227
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-TheHighlander'sDetermination"
+ value: {
+  dps: 680.29864
+  tps: 534.49227
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-AllItems-Warlord'sPursuit"
+ value: {
+  dps: 683.68259
+  tps: 540.49413
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Average-Default"
+ value: {
+  dps: 669.45052
+  tps: 525.2439
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-LongMultiTarget"
+ value: {
+  dps: 747.56328
+  tps: 841.06789
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-LongSingleTarget"
+ value: {
+  dps: 671.40067
+  tps: 527.76385
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-ShortSingleTarget"
+ value: {
+  dps: 808.04976
+  tps: 655.55306
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-LongMultiTarget"
+ value: {
+  dps: 329.45345
+  tps: 318.06103
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-LongSingleTarget"
+ value: {
+  dps: 304.54629
+  tps: 245.99798
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-ShortSingleTarget"
+ value: {
+  dps: 447.70616
+  tps: 382.1363
+ }
+}
+dps_results: {
+ key: "TestMMHunter-Phase1-SwitchInFrontOfTarget-Default"
+ value: {
+  dps: 672.37442
+  tps: 528.14304
+ }
+}

@@ -9,7 +9,7 @@ import (
 	"github.com/isfir/wowsims-turtle/sim/core/stats"
 )
 
-var TalentTreeSizes = [3]int{16, 14, 16}
+var TalentTreeSizes = [3]int{19, 16, 20}
 
 const (
 	SpellFlagShot   = core.SpellFlagAgentReserved1
@@ -25,6 +25,8 @@ const (
 	SpellCode_HunterAimedShot
 	SpellCode_HunterArcaneShot
 	SpellCode_HunterMultiShot
+	SpellCode_HunterSteadyShot
+	SpellCode_HunterExtraShot
 
 	// Strikes
 	SpellCode_HunterRaptorStrike
@@ -42,6 +44,11 @@ const (
 	SpellCode_HunterMongooseBite
 	SpellCode_HunterWingClip
 	SpellCode_HunterVolley
+	SpellCode_HunterCarve
+	SpellCode_HunterLacerate
+	SpellCode_HunterLacerateBleed
+	SpellCode_HunterPiercingShots
+	SpellCode_HunterKillCommand
 
 	// Pet Spells
 	SpellCode_HunterPetClaw
@@ -82,12 +89,19 @@ type Hunter struct {
 
 	// Miscellaneous set bonuses that require extra logic inside of spells
 	AspectOfTheHawkAPMultiplier float64
+	AspectOfTheWolfAPMultiplier float64
 
 	curQueueAura       *core.Aura
 	curQueuedAutoSpell *core.Spell
 
 	AimedShot       *core.Spell
 	ArcaneShot      *core.Spell
+	Carve           *core.Spell
+	ExtraShot       *core.Spell
+	Lacerate        *core.Spell
+	LacerateBleed   *core.Spell
+	PiercingShots   *core.Spell
+	SteadyShot      *core.Spell
 	ExplosiveTrap   *core.Spell
 	ImmolationTrap  *core.Spell
 	FreezingTrap    *core.Spell
@@ -97,6 +111,7 @@ type Hunter struct {
 	RaptorStrike    *core.Spell
 	RaptorStrikeHit *core.Spell
 	MongooseBite    *core.Spell
+	MongooseBiteOH  *core.Spell
 	ScorpidSting    *core.Spell
 	SerpentSting    *core.Spell
 	SilencingShot   *core.Spell
@@ -108,11 +123,13 @@ type Hunter struct {
 	MeleeSpells []*core.Spell
 	LastShot    *core.Spell
 
-	// The aura that allows you to cast Mongoose Bite
-	DefensiveState *core.Aura
+	// Set when the hunter lands a critical strike; enables Kill Command and Lacerate.
+	KillCommandReadyAura *core.Aura
+	LacerateReadyAura    *core.Aura
+	LockAndLoadAura      *core.Aura
 
 	RapidFireAura       *core.Aura
-	BestialWrathPetAura *core.Aura
+	ScentOfBloodPetAura *core.Aura
 }
 
 func (hunter *Hunter) GetCharacter() *core.Character {
@@ -147,20 +164,29 @@ func (hunter *Hunter) Initialize() {
 	})
 
 	hunter.registerAspectOfTheHawkSpell()
+	hunter.registerAspectOfTheWolfSpell()
+	hunter.registerAspectOfTheViperSpell()
 
+	// Multi-Shot and Carve share a cooldown.
 	multiShotTimer := hunter.NewTimer()
-	arcaneShotTimer := hunter.NewTimer()
 
 	hunter.registerSerpentStingSpell()
 
-	hunter.registerArcaneShotSpell(arcaneShotTimer)
-	hunter.registerAimedShotSpell(arcaneShotTimer)
+	hunter.registerArcaneShotSpell()
+	hunter.registerAimedShotSpell()
 	hunter.registerMultiShotSpell(multiShotTimer)
+	hunter.registerSteadyShotSpell()
+	hunter.registerExtraShotSpell()
 
 	hunter.registerRaptorStrikeSpell()
 	hunter.registerMongooseBiteSpell()
 	hunter.registerWingClipSpell()
 	hunter.registerVolleySpell()
+	hunter.registerCarveSpell(multiShotTimer)
+
+	hunter.registerCritReactiveAuras()
+	hunter.registerLacerateSpell()
+	hunter.registerKillCommandSpell()
 
 	traps := hunter.NewTimer()
 
@@ -288,6 +314,25 @@ func NewHunter(character *core.Character, options *proto.Player) *Hunter {
 }
 
 func (hunter *Hunter) OnGCDReady(_ *core.Simulation) {
+}
+
+// RangedCastWindup models the hidden auto-shot style windup of hunter ranged casts.
+// The client cast times of Aimed Shot, Multi-Shot and Steady Shot do not include it.
+const RangedCastWindup = time.Millisecond * 500
+
+// shotCastTime returns the cast time of a hunter shot. In Turtle WoW, ranged haste does not
+// shorten shot casts; Rapid Fire reduces them explicitly through CastTimeMultiplier.
+func (hunter *Hunter) shotCastTime(spell *core.Spell) time.Duration {
+	return time.Duration(float64(spell.DefaultCast.CastTime)*spell.CastTimeMultiplier) + RangedCastWindup
+}
+
+// rangedWeaponDamage returns ranged weapon damage including ammo, using the current ranged attack power.
+func (hunter *Hunter) rangedWeaponDamage(sim *core.Simulation, spell *core.Spell, target *core.Unit, normalized bool) float64 {
+	rap := spell.RangedAttackPower(target, false)
+	if normalized {
+		return hunter.AutoAttacks.Ranged().CalculateNormalizedWeaponDamage(sim, rap) + hunter.AmmoDamageBonus
+	}
+	return hunter.RangedWeaponDamage(sim, rap) + hunter.AmmoDamageBonus
 }
 
 // Agent is a generic way to access underlying hunter on any of the agents.
