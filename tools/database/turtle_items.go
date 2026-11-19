@@ -1042,8 +1042,12 @@ func auraTypeToEffects(auraType, miscValue int32, value float64) ([]SpellEffect,
 	case auraModAttackPower:
 		return []SpellEffect{{Stat: proto.Stat_StatAttackPower, Value: value}}, true
 
-	case auraModRangedAttackPower, auraModRangedAttackPowerVersus:
+	case auraModRangedAttackPower:
 		return []SpellEffect{{Stat: proto.Stat_StatRangedAttackPower, Value: value}}, true
+
+	// auraModRangedAttackPowerVersus (e.g. "+81 Attack Power when fighting Undead") is conditional on the
+	// target's creature type. Like its melee counterpart it stays unhandled here, so it is not added as a
+	// flat stat; the sim applies it per mob type (core.NewMobTypeAttackPowerEffect).
 
 	case auraModIncreaseHealth:
 		return []SpellEffect{{Stat: proto.Stat_StatHealth, Value: value}}, true
