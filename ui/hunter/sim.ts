@@ -66,7 +66,7 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 		Stat.StatSpellCrit,
 		Stat.StatMP5,
 	],
-	displayPseudoStats: [PseudoStat.PseudoStatRangedHit, PseudoStat.PseudoStatMeleeSpeedMultiplier, PseudoStat.PseudoStatRangedSpeedMultiplier],
+	displayPseudoStats: [PseudoStat.PseudoStatRangedHit, PseudoStat.PseudoStatRangedCrit, PseudoStat.PseudoStatMeleeSpeedMultiplier, PseudoStat.PseudoStatRangedSpeedMultiplier],
 
 	defaults: {
 		race: Presets.OtherDefaults.race,

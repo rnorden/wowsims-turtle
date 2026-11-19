@@ -465,12 +465,10 @@ func (unit *Unit) AddBonusRangedHitRating(amount float64) {
 	unit.PseudoStats.BonusRangedHitRating += amount
 }
 
+// AddBonusRangedCritRating adds crit rating that only applies to ranged attacks. It is tracked as a
+// pseudo stat so the character sheet can show it (PseudoStatRangedCrit).
 func (unit *Unit) AddBonusRangedCritRating(amount float64) {
-	unit.OnSpellRegistered(func(spell *Spell) {
-		if spell.CastType == proto.CastType_CastTypeRanged {
-			spell.BonusCritRating += amount
-		}
-	})
+	unit.PseudoStats.BonusRangedCritRating += amount
 }
 
 func (unit *Unit) ApplyFortuneToProcChance(baseChance float64) float64 {

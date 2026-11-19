@@ -137,6 +137,9 @@ func (spell *Spell) PhysicalHitChance(attackTable *AttackTable) float64 {
 func (spell *Spell) PhysicalCritChance(attackTable *AttackTable) float64 {
 	critRating := spell.Unit.stats[stats.MeleeCrit] +
 		spell.BonusCritRating
+	if spell.CastType == proto.CastType_CastTypeRanged {
+		critRating += spell.Unit.PseudoStats.BonusRangedCritRating
+	}
 	return critRating/(CritRatingPerCritChance*100) - attackTable.MeleeCritSuppression
 }
 func (spell *Spell) PhysicalCritCheck(sim *Simulation, attackTable *AttackTable) bool {

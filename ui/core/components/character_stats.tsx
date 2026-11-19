@@ -34,6 +34,7 @@ const statGroups = new Map<string, Array<UnitStat>>([
 			UnitStat.fromPseudoStat(PseudoStat.PseudoStatRangedHit),
 			UnitStat.fromStat(Stat.StatExpertise),
 			UnitStat.fromStat(Stat.StatMeleeCrit),
+			UnitStat.fromPseudoStat(PseudoStat.PseudoStatRangedCrit),
 			UnitStat.fromStat(Stat.StatMeleeHaste),
 			UnitStat.fromPseudoStat(PseudoStat.PseudoStatMeleeSpeedMultiplier),
 			UnitStat.fromPseudoStat(PseudoStat.PseudoStatRangedSpeedMultiplier),
@@ -548,6 +549,13 @@ export class CharacterStats extends Component {
 					displayStr = `${(
 						deltaStats.getStat(Stat.StatMeleeHit) / Mechanics.MELEE_HIT_RATING_PER_HIT_CHANCE +
 						deltaStats.getPseudoStat(PseudoStat.PseudoStatRangedHit)
+					).toFixed(2)}%`;
+					break;
+				case PseudoStat.PseudoStatRangedCrit:
+					// Ranged attacks use the shared physical crit stat plus ranged-only bonuses (e.g. scopes).
+					displayStr = `${(
+						deltaStats.getStat(Stat.StatMeleeCrit) / Mechanics.MELEE_CRIT_RATING_PER_CRIT_CHANCE +
+						deltaStats.getPseudoStat(PseudoStat.PseudoStatRangedCrit)
 					).toFixed(2)}%`;
 					break;
 			}

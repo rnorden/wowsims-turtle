@@ -199,6 +199,7 @@ func NewCharacter(party *Party, partyIndex int, player *proto.Player) Character 
 			character.PseudoStats.RangedSpeedMultiplier += ps[proto.PseudoStat_PseudoStatRangedSpeedMultiplier] / 100
 			character.PseudoStats.CastSpeedMultiplier += ps[proto.PseudoStat_PseudoStatCastSpeedMultiplier] / 100
 			character.PseudoStats.BonusRangedHitRating += ps[proto.PseudoStat_PseudoStatRangedHit] * MeleeHitRatingPerHitChance
+			character.PseudoStats.BonusRangedCritRating += ps[proto.PseudoStat_PseudoStatRangedCrit] * CritRatingPerCritChance
 		}
 	}
 
@@ -663,7 +664,8 @@ func (character *Character) GetPseudoStatsProto() []float64 {
 
 		proto.PseudoStat_BonusPhysicalDamage: float64(character.PseudoStats.BonusPhysicalDamage),
 
-		proto.PseudoStat_PseudoStatRangedHit: character.PseudoStats.BonusRangedHitRating / MeleeHitRatingPerHitChance,
+		proto.PseudoStat_PseudoStatRangedHit:  character.PseudoStats.BonusRangedHitRating / MeleeHitRatingPerHitChance,
+		proto.PseudoStat_PseudoStatRangedCrit: character.PseudoStats.BonusRangedCritRating / CritRatingPerCritChance,
 	}
 }
 

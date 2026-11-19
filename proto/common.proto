@@ -172,6 +172,8 @@ enum PseudoStat {
 
 	// Ranged-only hit chance bonus in %, on top of the shared physical hit stat (e.g. Biznicks 247x128 Accurascope).
 	PseudoStatRangedHit = 32;
+	// Ranged-only crit chance bonus in %, on top of the shared physical crit stat (e.g. Facetted Crystal Scope).
+	PseudoStatRangedCrit = 33;
 }
 
 message UnitStats {

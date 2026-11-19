@@ -431,7 +431,8 @@ type PseudoStats struct {
 	BonusOHDps     float64
 	BonusRangedDps float64
 
-	BonusRangedHitRating float64 // Hit rating that only applies to ranged attacks (e.g. scopes)
+	BonusRangedHitRating  float64 // Hit rating that only applies to ranged attacks (e.g. scopes)
+	BonusRangedCritRating float64 // Crit rating that only applies to ranged attacks (e.g. scopes)
 
 	DisableDWMissPenalty bool    // Used by Heroic Strike and Cleave
 	IncreasedMissChance  float64 // Insect Swarm and Scorpid Sting
