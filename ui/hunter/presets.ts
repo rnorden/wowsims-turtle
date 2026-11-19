@@ -169,6 +169,34 @@ export const SettingsNoBuffs = PresetUtils.makePresetEncounter('no-buffs', undef
 
 export const BuildNoBuffs = PresetUtils.makePresetBuild('no-buffs', { encounter: SettingsNoBuffs });
 
+// Typical raid group buffs and personal consumables, without world buffs.
+export const SettingsRaidBuffs = PresetUtils.makePresetEncounter('raid-buffs', undefined, {
+	raidBuffs: RaidBuffs.create({
+		arcaneBrilliance: true,
+		battleShout: TristateEffect.TristateEffectRegular,
+		divineSpirit: true,
+		giftOfTheWild: TristateEffect.TristateEffectImproved,
+		graceOfAirTotem: TristateEffect.TristateEffectImproved,
+		leaderOfThePack: true,
+		powerWordFortitude: TristateEffect.TristateEffectImproved,
+		strengthOfEarthTotem: TristateEffect.TristateEffectImproved,
+	}),
+	buffs: IndividualBuffs.create(),
+	debuffs: Debuffs.create({ huntersMark: TristateEffect.TristateEffectRegular }),
+	consumes: Consumes.create({
+		agilityElixir: AgilityElixir.ElixirOfTheMongoose,
+		attackPowerBuff: AttackPowerBuff.JujuMight,
+		defaultConjured: Conjured.ConjuredDemonicRune,
+		defaultPotion: Potions.MajorManaPotion,
+		flask: Flask.FlaskOfTheTitans,
+		food: Food.FoodGrilledSquid,
+		petAttackPowerConsumable: 1,
+		zanzaBuff: ZanzaBuff.SpiritOfZanza,
+	}),
+});
+
+export const BuildRaidBuffs = PresetUtils.makePresetBuild('raid-buffs', { encounter: SettingsRaidBuffs });
+
 export const OtherDefaults = {
 	distanceFromTarget: 12,
 	profession1: Profession.Enchanting,
