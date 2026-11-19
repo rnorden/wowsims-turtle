@@ -148,6 +148,8 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 		rotations: [...Presets.APLPresets[Phase.Phase1]],
 		// Preset gear configurations that the user can quickly select.
 		gear: [...Presets.GearPresets[Phase.Phase1]],
+		// Preset configurations (shown on the settings tab for buff/consume-only presets).
+		builds: [Presets.BuildNoBuffs],
 	},
 
 	autoRotation: player => {

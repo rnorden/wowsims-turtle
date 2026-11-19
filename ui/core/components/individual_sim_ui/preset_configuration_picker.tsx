@@ -5,7 +5,7 @@ import { SpecOptions } from '../../../core/proto_utils/utils';
 import { IndividualSimUI } from '../../individual_sim_ui';
 import { PresetBuild } from '../../preset_utils';
 import { APLRotation, APLRotation_Type } from '../../proto/apl';
-import { Encounter, EquipmentSpec, HealingModel, Spec } from '../../proto/common';
+import { Consumes, Debuffs, Encounter, EquipmentSpec, HealingModel, IndividualBuffs, RaidBuffs, Spec } from '../../proto/common';
 import { SavedTalents } from '../../proto/ui';
 import { TypedEvent } from '../../typed_event';
 import { Component } from '../component';
@@ -151,15 +151,21 @@ export class PresetConfigurationPicker extends Component {
 		}
 		const hasEpWeights = epWeights ? this.simUI.player.getEpWeights().equals(epWeights.epWeights) : true;
 		const presetEncounter = encounter ? this.simUI.sim.db.getPresetEncounter(encounter.name) : null;
-		const hasEncounter = encounter
-			? encounter.encounter
-				? Encounter.equals(encounter.encounter, this.simUI.sim.encounter.toProto())
-				: !!presetEncounter && this.simUI.sim.encounter.matchesPreset(presetEncounter)
-			: true;
+		// An encounter preset may carry only buffs/consumes; with no encounter of its own there is nothing to match.
+		const hasEncounter = encounter?.encounter
+			? Encounter.equals(encounter.encounter, this.simUI.sim.encounter.toProto())
+			: presetEncounter
+				? this.simUI.sim.encounter.matchesPreset(presetEncounter)
+				: true;
 		const hasHealingModel = encounter?.healingModel ? HealingModel.equals(encounter.healingModel, this.simUI.player.getHealingModel()) : true;
+		const hasBuffs =
+			(!encounter?.raidBuffs || RaidBuffs.equals(encounter.raidBuffs, this.simUI.sim.raid.getBuffs())) &&
+			(!encounter?.buffs || IndividualBuffs.equals(encounter.buffs, this.simUI.player.getBuffs())) &&
+			(!encounter?.debuffs || Debuffs.equals(encounter.debuffs, this.simUI.sim.raid.getDebuffs())) &&
+			(!encounter?.consumes || Consumes.equals(encounter.consumes, this.simUI.player.getConsumes()));
 		const hasOptions = options ? this.containsAllFields(this.simUI.player.getSpecOptions(), options) : true;
 
-		return hasGear && hasRace && hasTalents && hasRotation && hasEpWeights && hasEncounter && hasHealingModel && hasOptions;
+		return hasGear && hasRace && hasTalents && hasRotation && hasEpWeights && hasEncounter && hasHealingModel && hasBuffs && hasOptions;
 	}
 
 	private containsAllFields<T extends Spec>(full: SpecOptions<T>, partial: Partial<SpecOptions<T>>): boolean {

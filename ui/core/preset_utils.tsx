@@ -78,7 +78,9 @@ export interface PresetEncounter extends PresetBase {
 	buffs?: IndividualBuffs;
 	consumes?: Consumes;
 }
-export interface PresetEncounterOptions extends PresetOptionsBase { }
+export interface PresetEncounterOptions
+	extends PresetOptionsBase,
+		Partial<Pick<PresetEncounter, 'healingModel' | 'tanks' | 'raidBuffs' | 'debuffs' | 'buffs' | 'consumes'>> {}
 
 export interface PresetBuild {
 	name: string;

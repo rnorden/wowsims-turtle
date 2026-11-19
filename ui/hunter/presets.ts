@@ -159,6 +159,16 @@ export const DefaultDebuffs = Debuffs.create({
 	sunderArmor: true,
 });
 
+// No raid/party/player buffs or consumables; only the hunter's own Hunter's Mark.
+export const SettingsNoBuffs = PresetUtils.makePresetEncounter('no-buffs', undefined, {
+	raidBuffs: RaidBuffs.create(),
+	buffs: IndividualBuffs.create(),
+	debuffs: Debuffs.create({ huntersMark: TristateEffect.TristateEffectRegular }),
+	consumes: Consumes.create(),
+});
+
+export const BuildNoBuffs = PresetUtils.makePresetBuild('no-buffs', { encounter: SettingsNoBuffs });
+
 export const OtherDefaults = {
 	distanceFromTarget: 12,
 	profession1: Profession.Enchanting,
