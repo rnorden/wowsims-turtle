@@ -123,6 +123,8 @@ var EnchantOverrides = []*proto.UIEnchant{
 	{EffectId: 41, SpellId: 7418, Name: "Enchant Bracer - Minor Health", Quality: proto.ItemQuality_ItemQualityCommon, Stats: stats.Stats{stats.Health: 5}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
 	{EffectId: 924, SpellId: 7428, Name: "Enchant Bracer - Minor Deflect", Quality: proto.ItemQuality_ItemQualityCommon, Stats: stats.Stats{stats.Defense: 1}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
 	{EffectId: 247, SpellId: 7779, Name: "Enchant Bracer - Minor Agility", Quality: proto.ItemQuality_ItemQualityCommon, Stats: stats.Stats{stats.Agility: 1}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
+	{EffectId: 904, SpellId: 44, Name: "Enchant Bracer - Agility", Quality: proto.ItemQuality_ItemQualityCommon, Stats: stats.Stats{stats.Agility: 5}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
+	{EffectId: 1887, SpellId: 57030, Name: "Enchant Bracer - Greater Agility", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Agility: 7}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
 	{EffectId: 248, SpellId: 7782, Name: "Enchant Bracer - Minor Strength", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Strength: 1}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
 	{EffectId: 255, SpellId: 7859, Name: "Enchant Bracer - Lesser Spirit", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Spirit: 3}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
 	{EffectId: 724, SpellId: 13501, Name: "Enchant Bracer - Lesser Stamina", Quality: proto.ItemQuality_ItemQualityCommon, Stats: stats.Stats{stats.Stamina: 3}.ToFloatArray(), Type: proto.ItemType_ItemTypeWrist},
@@ -186,6 +188,7 @@ var EnchantOverrides = []*proto.UIEnchant{
 	// Waist
 	{EffectId: 71, ItemId: 61779, SpellId: 57164, Name: "Copper Belt Buckle", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Stamina: 1}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
 	{EffectId: 72, ItemId: 61780, SpellId: 57167, Name: "Bronze Belt Buckle", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Stamina: 2}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
+	{EffectId: 92, ItemId: 61782, SpellId: 57173, Name: "Mithril Belt Buckle", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.Agility: 6}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
 	{EffectId: 28, ItemId: 61783, SpellId: 57176, Name: "Thorium Belt Buckle", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
 	{EffectId: 2160, ItemId: 67, SpellId: 41, Name: "Dragonscale Belt Buckle", Quality: proto.ItemQuality_ItemQualityUncommon, Stats: stats.Stats{stats.FirePower: 6}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
 	{EffectId: 3052, ItemId: 61785, SpellId: 57182, Name: "Dreamsteel Belt Buckle", Quality: proto.ItemQuality_ItemQualityRare, Stats: stats.Stats{stats.Intellect: 10}.ToFloatArray(), Type: proto.ItemType_ItemTypeWaist},
@@ -266,4 +269,5 @@ var EnchantOverrides = []*proto.UIEnchant{
 	{EffectId: 663, ItemId: 10546, SpellId: 12459, Name: "Deadly Scope", Quality: proto.ItemQuality_ItemQualityRare, Stats: stats.Stats{}.ToFloatArray(), Type: proto.ItemType_ItemTypeRanged},
 	{EffectId: 664, ItemId: 10548, SpellId: 12460, Name: "Sniper Scope", Quality: proto.ItemQuality_ItemQualityRare, Stats: stats.Stats{}.ToFloatArray(), Type: proto.ItemType_ItemTypeRanged},
 	{EffectId: 2523, ItemId: 18283, SpellId: 22779, Name: "Biznicks 247x128 Accurascope", Quality: proto.ItemQuality_ItemQualityRare, Stats: stats.Stats{}.ToFloatArray(), Type: proto.ItemType_ItemTypeRanged},
+	{EffectId: 450, ItemId: 33146, SpellId: 36945, Name: "Facetted Crystal Scope", Quality: proto.ItemQuality_ItemQualityRare, Stats: stats.Stats{}.ToFloatArray(), Type: proto.ItemType_ItemTypeRanged},
 }
