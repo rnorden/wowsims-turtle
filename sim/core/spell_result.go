@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/isfir/wowsims-turtle/sim/core/proto"
 	"github.com/isfir/wowsims-turtle/sim/core/stats"
 )
 
@@ -126,6 +127,9 @@ func (spell *Spell) PhysicalHitChance(attackTable *AttackTable) float64 {
 	hitRating := spell.Unit.stats[stats.MeleeHit] +
 		spell.BonusHitRating +
 		attackTable.Defender.PseudoStats.BonusMeleeHitRatingTaken
+	if spell.CastType == proto.CastType_CastTypeRanged {
+		hitRating += spell.Unit.PseudoStats.BonusRangedHitRating
+	}
 	hitChance := hitRating / (MeleeHitRatingPerHitChance * 100)
 	return max(hitChance-attackTable.HitSuppression, 0)
 }

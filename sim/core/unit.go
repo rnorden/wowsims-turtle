@@ -459,12 +459,10 @@ func (unit *Unit) MultiplyAttackSpeed(sim *Simulation, amount float64) {
 	unit.AutoAttacks.UpdateSwingTimers(sim)
 }
 
+// AddBonusRangedHitRating adds hit rating that only applies to ranged attacks. It is tracked as a
+// pseudo stat so the character sheet can show it (PseudoStatRangedHit).
 func (unit *Unit) AddBonusRangedHitRating(amount float64) {
-	unit.OnSpellRegistered(func(spell *Spell) {
-		if spell.CastType == proto.CastType_CastTypeRanged {
-			spell.BonusHitRating += amount
-		}
-	})
+	unit.PseudoStats.BonusRangedHitRating += amount
 }
 
 func (unit *Unit) AddBonusRangedCritRating(amount float64) {

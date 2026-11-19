@@ -31,6 +31,7 @@ const statGroups = new Map<string, Array<UnitStat>>([
 			UnitStat.fromStat(Stat.StatFeralAttackPower),
 			UnitStat.fromStat(Stat.StatRangedAttackPower),
 			UnitStat.fromStat(Stat.StatMeleeHit),
+			UnitStat.fromPseudoStat(PseudoStat.PseudoStatRangedHit),
 			UnitStat.fromStat(Stat.StatExpertise),
 			UnitStat.fromStat(Stat.StatMeleeCrit),
 			UnitStat.fromStat(Stat.StatMeleeHaste),
@@ -248,6 +249,33 @@ export class CharacterStats extends Component {
 					</div>
 				</div>
 			);
+
+			if (stat.isPseudoStat() && stat.getPseudoStat() === PseudoStat.PseudoStatRangedHit) {
+				tooltipContent.appendChild(
+					<div className="ps-2">
+						<div className="character-stats-tooltip-row">
+							<span>Ranged-only bonus</span>
+							<span>{`${finalStats.getPseudoStat(PseudoStat.PseudoStatRangedHit).toFixed(2)}%`}</span>
+						</div>
+						<div className="character-stats-tooltip-row">
+							<span>Bows</span>
+							<span>{this.weaponSkillDisplayString(talentsStats, PseudoStat.PseudoStatBowsSkill)}</span>
+						</div>
+						<div className="character-stats-tooltip-row">
+							<span>Crossbows</span>
+							<span>{this.weaponSkillDisplayString(talentsStats, PseudoStat.PseudoStatCrossbowsSkill)}</span>
+						</div>
+						<div className="character-stats-tooltip-row">
+							<span>Guns</span>
+							<span>{this.weaponSkillDisplayString(talentsStats, PseudoStat.PseudoStatGunsSkill)}</span>
+						</div>
+						<div className="character-stats-tooltip-row">
+							<span>Thrown</span>
+							<span>{this.weaponSkillDisplayString(talentsStats, PseudoStat.PseudoStatThrownSkill)}</span>
+						</div>
+					</div>,
+				);
+			}
 
 			if (stat.isStat() && stat.getStat() === Stat.StatMeleeHit) {
 				tooltipContent.appendChild(
@@ -514,6 +542,13 @@ export class CharacterStats extends Component {
 					break;
 				case PseudoStat.PseudoStatCastSpeedMultiplier:
 					displayStr = `${(100 * deltaStats.getPseudoStat(PseudoStat.PseudoStatCastSpeedMultiplier)).toFixed(2)}%`;
+					break;
+				case PseudoStat.PseudoStatRangedHit:
+					// Ranged attacks use the shared physical hit stat plus ranged-only bonuses (e.g. scopes).
+					displayStr = `${(
+						deltaStats.getStat(Stat.StatMeleeHit) / Mechanics.MELEE_HIT_RATING_PER_HIT_CHANCE +
+						deltaStats.getPseudoStat(PseudoStat.PseudoStatRangedHit)
+					).toFixed(2)}%`;
 					break;
 			}
 		}

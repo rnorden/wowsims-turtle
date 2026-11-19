@@ -169,6 +169,9 @@ enum PseudoStat {
 	PseudoStatRangedSpeedMultiplier = 28;
 	PseudoStatCastSpeedMultiplier = 31;
 	PseudoStatBlockValuePerStrength = 29;
+
+	// Ranged-only hit chance bonus in %, on top of the shared physical hit stat (e.g. Biznicks 247x128 Accurascope).
+	PseudoStatRangedHit = 32;
 }
 
 message UnitStats {
