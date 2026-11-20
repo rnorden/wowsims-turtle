@@ -18,6 +18,8 @@ type itemSetInfo struct {
 	SetName string
 }
 
+// Stat must be proto.Stat(-1) for effects that are not a stat (weapon skill, bonus physical damage);
+// the zero value is Stat_StatStrength.
 type SpellEffect struct {
 	Stat                proto.Stat
 	WeaponSkill         proto.WeaponSkill
@@ -978,6 +980,7 @@ func normalizeSpellAnalysis(
 	for wsIdx, value := range weaponSkillTotals {
 		if value != 0 {
 			analysis.Effects = append(analysis.Effects, SpellEffect{
+				Stat:        proto.Stat(-1),
 				WeaponSkill: proto.WeaponSkill(wsIdx),
 				Value:       value,
 			})
@@ -986,6 +989,7 @@ func normalizeSpellAnalysis(
 
 	if bonusPhysicalDamage != 0 {
 		analysis.Effects = append(analysis.Effects, SpellEffect{
+			Stat:                proto.Stat(-1),
 			BonusPhysicalDamage: bonusPhysicalDamage,
 		})
 	}
@@ -1001,7 +1005,7 @@ func auraTypeToEffects(auraType, miscValue int32, value float64) ([]SpellEffect,
 			effects = append(effects, SpellEffect{Stat: stat, Value: value})
 		}
 		if hasPhysical {
-			effects = append(effects, SpellEffect{BonusPhysicalDamage: value})
+			effects = append(effects, SpellEffect{Stat: proto.Stat(-1), BonusPhysicalDamage: value})
 		}
 		return effects, true
 
@@ -1080,7 +1084,7 @@ func auraTypeToEffects(auraType, miscValue int32, value float64) ([]SpellEffect,
 		if stat := skillIDToStat(miscValue); stat != proto.Stat(-1) {
 			return []SpellEffect{{Stat: stat, Value: value}}, true
 		} else if ws := skillIDToWeaponSkill(miscValue); ws != proto.WeaponSkill_WeaponSkillUnknown {
-			return []SpellEffect{{WeaponSkill: ws, Value: value}}, true
+			return []SpellEffect{{Stat: proto.Stat(-1), WeaponSkill: ws, Value: value}}, true
 		}
 		return nil, false
 
