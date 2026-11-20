@@ -820,6 +820,7 @@ func parseSpellEffectsCSV(csvData string) map[int32]SpellAnalysis {
 		"effectBasePoints_1", "effectBasePoints_2", "effectBasePoints_3",
 		"effectBaseDice_1", "effectBaseDice_2", "effectBaseDice_3",
 		"effectMiscValue_1", "effectMiscValue_2", "effectMiscValue_3",
+		"shapeshiftMask",
 	}
 	for _, col := range requiredCols {
 		if _, ok := colIdx[col]; !ok {
@@ -902,6 +903,13 @@ func parseSpellEffectsCSV(csvData string) map[int32]SpellAnalysis {
 				}
 			case auraModCritDamageTaken:
 				resilienceCritValue += math.Abs(value)
+				continue
+			}
+
+			// "+X Attack Power in Cat, Bear, Dire Bear, and Moonkin forms only": attack power that requires a
+			// shapeshift form is feral attack power, not regular melee attack power.
+			if int32(aura) == auraModAttackPower && row[colIdx["shapeshiftMask"]] != "" && row[colIdx["shapeshiftMask"]] != "0" {
+				analysis.Effects = append(analysis.Effects, SpellEffect{Stat: proto.Stat_StatFeralAttackPower, Value: value})
 				continue
 			}
 
