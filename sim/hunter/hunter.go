@@ -294,6 +294,7 @@ func NewHunter(character *core.Character, options *proto.Player) *Hunter {
 		baseDamage := hunter.RangedWeaponDamage(sim, spell.RangedAttackPower(target, false)) +
 			hunter.AmmoDamageBonus
 		result := spell.CalcDamage(sim, target, baseDamage, spell.OutcomeRangedHitAndCrit)
+		hunter.AutoAttacks.AddWeaponBonusDamage(sim, hunter.AutoAttacks.Ranged(), spell, result)
 
 		spell.WaitTravelTime(sim, func(sim *core.Simulation) {
 			spell.DealDamage(sim, result)

@@ -640,7 +640,7 @@ export default class ItemList<T extends ItemListType> {
 				`${ActionId.makeItemUrl(item.id)}#dropped-by`,
 				<div className="d-flex">
 					{this.getDropSourceIcon()}
-					<span>Multiple Sources</span>
+					<span>{src.otherName || 'Multiple Sources'}</span>
 				</div>,
 			);
 		} else if (source.source.oneofKind == 'quest' && source.source.quest.name) {

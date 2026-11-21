@@ -327,6 +327,7 @@ func parseItemRow(row []string, colIdx map[string]int, displayInfo map[int32]str
 		item.WeaponDamageMin = minDmg
 		item.WeaponDamageMax = maxDmg
 		item.WeaponSpeed = speed
+		item.BonusDamage = parseWeaponBonusDamage(row, colIdx)
 	}
 
 	item.Effects = parseItemEffects(row, colIdx, spellEffects)
@@ -553,6 +554,41 @@ func parseWeaponDamage(row []string, colIdx map[string]int) (minDmg, maxDmg, spe
 	}
 
 	return minDmg, maxDmg, speed
+}
+
+// dbcDamageSchools maps the Items.dbc damage TypeID to the sim's spell school.
+var dbcDamageSchools = map[int]proto.SpellSchool{
+	0: proto.SpellSchool_SpellSchoolPhysical,
+	1: proto.SpellSchool_SpellSchoolHoly,
+	2: proto.SpellSchool_SpellSchoolFire,
+	3: proto.SpellSchool_SpellSchoolNature,
+	4: proto.SpellSchool_SpellSchoolFrost,
+	5: proto.SpellSchool_SpellSchoolShadow,
+	6: proto.SpellSchool_SpellSchoolArcane,
+}
+
+// parseWeaponBonusDamage reads the extra damage lines (damage2..damage5) of a weapon,
+// e.g. Time Frozen Bow's "+4 - 10 Fire Damage".
+func parseWeaponBonusDamage(row []string, colIdx map[string]int) []*proto.ItemBonusDamage {
+	var bonus []*proto.ItemBonusDamage
+	for i := 2; i <= 5; i++ {
+		minDmg, _ := strconv.ParseFloat(getString(row, colIdx, fmt.Sprintf("damage%dMin", i)), 64)
+		maxDmg, _ := strconv.ParseFloat(getString(row, colIdx, fmt.Sprintf("damage%dMax", i)), 64)
+		if minDmg <= 0 && maxDmg <= 0 {
+			continue
+		}
+		typeID, _ := strconv.Atoi(getString(row, colIdx, fmt.Sprintf("damage%dTypeID", i)))
+		school, ok := dbcDamageSchools[typeID]
+		if !ok {
+			continue
+		}
+		bonus = append(bonus, &proto.ItemBonusDamage{
+			Min:    minDmg,
+			Max:    max(minDmg, maxDmg),
+			School: school,
+		})
+	}
+	return bonus
 }
 
 func parseClassMask(classMask uint32) []proto.Class {

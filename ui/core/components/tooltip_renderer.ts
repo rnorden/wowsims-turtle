@@ -4,6 +4,7 @@ import {
 	ItemQuality,
 	ItemType,
 	Profession,
+	SpellSchool,
 	Stat,
 	WeaponSkill,
 } from '../proto/common';
@@ -39,8 +40,18 @@ type ResolvedSetBonus = {
 	isImplemented: boolean;
 };
 
+type ResolvedDropSource = {
+	name: string;
+	zoneName?: string;
+	// Percent chance, 0 when not applicable (e.g. world drops).
+	chance: number;
+};
+
+const MAX_TOOLTIP_DROP_SOURCES = 3;
+
 type TooltipRenderableItem = UIItem & {
 	tooltipResolvedEnchantText?: string;
+	tooltipResolvedDropSources?: ResolvedDropSource[];
 	tooltipResolvedSetName?: string;
 	tooltipSetItems?: UIItem[];
 	tooltipResolvedEffectLines?: ResolvedItemEffectLine[];
@@ -235,6 +246,16 @@ function getWeaponSectionLines(item: UIItem): string[] {
 	const maxDamage = item.weaponDamageMax ?? 0;
 	const weaponSpeed = item.weaponSpeed ?? 0;
 
+	// Extra damage of another school, e.g. "+4 - 10 Fire Damage".
+	const bonusDamage = item.bonusDamage ?? [];
+	const bonusAverage = bonusDamage.reduce((sum, bonus) => sum + (bonus.min + bonus.max) / 2, 0);
+	const bonusDamageLines = bonusDamage.map(bonus =>
+		textLine(
+			'tooltip-stat',
+			`+${formatWholeNumber(bonus.min)} - ${formatWholeNumber(bonus.max)} ${SpellSchool[bonus.school].replace('SpellSchool', '')} Damage`,
+		),
+	);
+
 	if ((minDamage > 0 || maxDamage > 0) && weaponSpeed > 0) {
 		lines.push(
 			pairedTextLine(
@@ -244,10 +265,13 @@ function getWeaponSectionLines(item: UIItem): string[] {
 			),
 		);
 
-		const dps = ((minDamage + maxDamage) / 2) / weaponSpeed;
+		bonusDamageLines.forEach(line => lines.push(line));
+
+		const dps = ((minDamage + maxDamage) / 2 + bonusAverage) / weaponSpeed;
 		lines.push(textLine('tooltip-note', `(${formatFixed(dps, 1)} damage per second)`));
 	} else if (minDamage > 0 || maxDamage > 0) {
 		lines.push(textLine('tooltip-stat', `${formatWholeNumber(minDamage)} - ${formatWholeNumber(maxDamage)} Damage`));
+		bonusDamageLines.forEach(line => lines.push(line));
 	}
 
 	if ((item.bonusPhysicalDamage ?? 0) > 0) {
@@ -653,6 +677,54 @@ function resolveItemSetData(
 	};
 }
 
+function resolveDropSources(item: UIItem, db: Database): ResolvedDropSource[] {
+	const sources: ResolvedDropSource[] = [];
+	for (const itemSource of item.sources) {
+		if (itemSource.source.oneofKind !== 'drop') {
+			continue;
+		}
+		const drop = itemSource.source.drop;
+		const name = (drop.npcId ? db.getNpc(drop.npcId)?.name : undefined) || drop.otherName;
+		if (!name) {
+			continue;
+		}
+		sources.push({
+			name,
+			zoneName: drop.zoneId ? db.getZone(drop.zoneId)?.name : undefined,
+			chance: drop.dropChance,
+		});
+	}
+
+	// Highest chance first; chance-less sources (world drops) last.
+	return sources.sort((a, b) => b.chance - a.chance).slice(0, MAX_TOOLTIP_DROP_SOURCES);
+}
+
+function formatDropChance(chance: number): string | null {
+	if (chance <= 0) {
+		return null;
+	}
+	if (chance >= 10) {
+		return `${formatNumber(chance, 0)}%`;
+	}
+	if (chance >= 1) {
+		return `${formatNumber(chance, 1)}%`;
+	}
+	return chance >= 0.01 ? `${formatNumber(chance, 2)}%` : '<0.01%';
+}
+
+function renderDropSourcesSection(sources: ResolvedDropSource[]): string {
+	if (sources.length === 0) {
+		return '';
+	}
+
+	const lines = [textLine('tooltip-source-header', 'Dropped by:')];
+	for (const source of sources) {
+		const label = source.zoneName ? `${source.name} (${source.zoneName})` : source.name;
+		lines.push(pairedTextLine('tooltip-source', label, formatDropChance(source.chance)));
+	}
+	return lines.join('');
+}
+
 function renderItemHeader(item: UIItem): string {
 	const qualityClass = getQualityClassName(item.quality);
 	const name = item.name || `Item ${item.id}`;
@@ -803,6 +875,11 @@ export function renderItemTooltip(item: UIItem, tooltipContext?: Partial<ItemToo
 		}
 	}
 
+	const dropSourcesSection = renderDropSourcesSection(tooltipItem.tooltipResolvedDropSources ?? []);
+	if (dropSourcesSection) {
+		lines.push(dropSourcesSection);
+	}
+
 	return `<div class="wow-tooltip">${lines.join('')}</div>`;
 }
 
@@ -886,12 +963,14 @@ export async function getItemTooltipData(itemId: number, tooltipContext?: Partia
 		}
 
 		const tooltipResolvedEffectLines = resolveItemEffectLines(item, db);
+		const tooltipResolvedDropSources = resolveDropSources(item, db);
 		const { tooltipResolvedSetName, tooltipSetItems, tooltipResolvedSetBonuses } = resolveItemSetData(item, db);
 
 		return {
 			...item,
 			tooltipResolvedEnchantText,
 			tooltipResolvedEffectLines,
+			tooltipResolvedDropSources,
 			tooltipResolvedSetName,
 			tooltipSetItems,
 			tooltipResolvedSetBonuses,

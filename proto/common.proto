@@ -864,7 +864,15 @@ message SimDatabase {
 }
 
 // Contains only the Item info needed by the sim.
-// NextIndex: 20
+// Extra damage of a (usually magic) school dealt by a weapon on each hit,
+// e.g. "+4 - 10 Fire Damage".
+message ItemBonusDamage {
+	double min = 1;
+	double max = 2;
+	SpellSchool school = 3;
+}
+
+// NextIndex: 21
 message SimItem {
 	int32 id = 1;
 	repeated Class class_allowlist = 17;
@@ -882,6 +890,7 @@ message SimItem {
 	double weapon_damage_max = 12;
 	double weapon_speed = 13;
 	double bonus_physical_damage = 19;
+	repeated ItemBonusDamage bonus_damage = 20;
 
 	string set_name = 14;
 	int32 set_id = 18;

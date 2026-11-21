@@ -486,6 +486,15 @@ func (character *Character) Finalize() {
 
 	character.PseudoStats.ParryHaste = character.PseudoStats.CanParry
 
+	// Weapons that can be swapped in need their bonus damage spells registered too.
+	if character.ItemSwap.IsEnabled() {
+		for _, item := range character.ItemSwap.unEquippedItems {
+			for _, bonus := range item.BonusDamage {
+				character.AutoAttacks.ExtraBonusSchools = append(character.AutoAttacks.ExtraBonusSchools, bonus.School)
+			}
+		}
+	}
+
 	character.Unit.finalize()
 
 	character.majorCooldownManager.finalize()

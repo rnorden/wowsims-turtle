@@ -34,6 +34,16 @@ import { SavedTalents } from '../core/proto/ui.js';
 import BMAPL from './apls/bm.apl.json';
 import BMNoBuffsAPL from './apls/bm_nobuffs.apl.json';
 import P1APL from './apls/p1.apl.json';
+import BMAlt01Gear from './gear_sets/bm_alt01.gear.json';
+import BMAlt02Gear from './gear_sets/bm_alt02.gear.json';
+import BMAlt03Gear from './gear_sets/bm_alt03.gear.json';
+import BMAlt04Gear from './gear_sets/bm_alt04.gear.json';
+import BMAlt05Gear from './gear_sets/bm_alt05.gear.json';
+import BMAlt06Gear from './gear_sets/bm_alt06.gear.json';
+import BMAlt07Gear from './gear_sets/bm_alt07.gear.json';
+import BMAlt08Gear from './gear_sets/bm_alt08.gear.json';
+import BMAlt09Gear from './gear_sets/bm_alt09.gear.json';
+import BMAlt10Gear from './gear_sets/bm_alt10.gear.json';
 import BMNoBuffsGear from './gear_sets/bm_nobuffs.gear.json';
 import BMPreBISGear from './gear_sets/bm_prebis.gear.json';
 import BMPreBISNoT05ExaltedGear from './gear_sets/bm_prebis_no_t05_exalted.gear.json';
@@ -54,12 +64,40 @@ export const GearBMPreBIS = PresetUtils.makePresetGear('BM Pre-BiS', BMPreBISGea
 export const GearBMPreBISNoT05Exalted = PresetUtils.makePresetGear('BM Pre-BiS (no T0.5/exalted)', BMPreBISNoT05ExaltedGear);
 // Best of the BM pre-raid alternatives without buffs/consumables (slow bow; see the no-buffs rotation).
 export const GearBMNoBuffs = PresetUtils.makePresetGear('BM no-buffs', BMNoBuffsGear);
+// The 10 best sim-derived BM pre-raid alternatives (no T0.5/exalted pool), ranked by DPS with buffs.
+export const GearBMAlt01 = PresetUtils.makePresetGear('BM alt #1', BMAlt01Gear);
+export const GearBMAlt02 = PresetUtils.makePresetGear('BM alt #2', BMAlt02Gear);
+export const GearBMAlt03 = PresetUtils.makePresetGear('BM alt #3', BMAlt03Gear);
+export const GearBMAlt04 = PresetUtils.makePresetGear('BM alt #4', BMAlt04Gear);
+export const GearBMAlt05 = PresetUtils.makePresetGear('BM alt #5', BMAlt05Gear);
+export const GearBMAlt06 = PresetUtils.makePresetGear('BM alt #6', BMAlt06Gear);
+export const GearBMAlt07 = PresetUtils.makePresetGear('BM alt #7', BMAlt07Gear);
+export const GearBMAlt08 = PresetUtils.makePresetGear('BM alt #8', BMAlt08Gear);
+export const GearBMAlt09 = PresetUtils.makePresetGear('BM alt #9', BMAlt09Gear);
+export const GearBMAlt10 = PresetUtils.makePresetGear('BM alt #10', BMAlt10Gear);
 export const GearCurrentEadi = PresetUtils.makePresetGear('current-eadi', CurrentEadiGear);
 export const GearP0BIS = PresetUtils.makePresetGear('Pre-BiS', P0BISGear);
 export const GearP1BIS = PresetUtils.makePresetGear('P1 BiS', P1BISGear);
 
 export const GearPresets = {
-	[Phase.Phase1]: [GearBMPreBIS, GearBMPreBISNoT05Exalted, GearBMNoBuffs, GearCurrentEadi, GearP0BIS, GearP1BIS],
+	[Phase.Phase1]: [
+		GearBMPreBIS,
+		GearBMPreBISNoT05Exalted,
+		GearBMNoBuffs,
+		GearBMAlt01,
+		GearBMAlt02,
+		GearBMAlt03,
+		GearBMAlt04,
+		GearBMAlt05,
+		GearBMAlt06,
+		GearBMAlt07,
+		GearBMAlt08,
+		GearBMAlt09,
+		GearBMAlt10,
+		GearCurrentEadi,
+		GearP0BIS,
+		GearP1BIS,
+	],
 };
 
 export const DefaultGear = GearBMPreBIS;

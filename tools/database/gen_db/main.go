@@ -60,6 +60,10 @@ func main() {
 
 	ApplyGlobalFilters(db)
 
+	database.ApplyLootSources(db,
+		tools.ReadFile(fmt.Sprintf("%s/LootSources.csv", inputsDir)),
+		tools.ReadFile(fmt.Sprintf("%s/LootZones.csv", inputsDir)))
+
 	leftovers := db.Clone()
 	ApplyNonSimmableFilters(leftovers)
 	leftovers.WriteBinaryAndJson(fmt.Sprintf("%s/leftover_db.bin", dbDir), fmt.Sprintf("%s/leftover_db.json", dbDir))

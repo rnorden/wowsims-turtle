@@ -133,8 +133,19 @@ $set-inactive: #9a9a9a;
     .tooltip-set-name,
     .tooltip-set-item,
     .tooltip-set-bonus,
+    .tooltip-source-header,
+    .tooltip-source,
     .tooltip-item-level {
         margin-bottom: 2px;
+    }
+
+    .tooltip-source-header {
+        margin-top: 6px;
+        color: $tooltip-description;
+    }
+
+    .tooltip-source {
+        color: $tooltip-text;
     }
 
     .tooltip-meta,

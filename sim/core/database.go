@@ -60,6 +60,7 @@ type Item struct {
 	Name                string
 	Stats               stats.Stats // Stats applied to wearer
 	BonusPhysicalDamage float64
+	BonusDamage         []WeaponBonusDamage // Extra damage of another school dealt on each weapon hit.
 	Quality             proto.ItemQuality
 	SetName             string // Empty string if not part of a set.
 	SetID               int32  // 0 if not part of a set.
@@ -71,6 +72,21 @@ type Item struct {
 
 	//Internal use
 	TempEnchant int32
+}
+
+func weaponBonusDamageFromProto(pData []*proto.ItemBonusDamage) []WeaponBonusDamage {
+	if len(pData) == 0 {
+		return nil
+	}
+	bonus := make([]WeaponBonusDamage, 0, len(pData))
+	for _, b := range pData {
+		bonus = append(bonus, WeaponBonusDamage{
+			Min:    b.Min,
+			Max:    b.Max,
+			School: SpellSchoolFromProto(b.School),
+		})
+	}
+	return bonus
 }
 
 func ItemFromProto(pData *proto.SimItem) Item {
@@ -88,6 +104,7 @@ func ItemFromProto(pData *proto.SimItem) Item {
 		SwingSpeed:          pData.WeaponSpeed,
 		Stats:               stats.FromFloatArray(pData.Stats),
 		BonusPhysicalDamage: pData.BonusPhysicalDamage,
+		BonusDamage:         weaponBonusDamageFromProto(pData.BonusDamage),
 		SetName:             pData.SetName,
 		SetID:               pData.SetId,
 		WeaponSkills:        stats.WeaponSkillsFloatArray(pData.WeaponSkills),

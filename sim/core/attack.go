@@ -22,6 +22,15 @@ type Weapon struct {
 	SwingSpeed           float64
 	NormalizedSwingSpeed float64
 	SpellSchool          SpellSchool
+	BonusDamage          []WeaponBonusDamage // Extra damage of another school, part of each white hit.
+}
+
+// WeaponBonusDamage is extra damage of another school dealt by a weapon on each hit,
+// e.g. Time Frozen Bow's "+4 - 10 Fire Damage".
+type WeaponBonusDamage struct {
+	Min    float64
+	Max    float64
+	School SpellSchool
 }
 
 func (weapon *Weapon) DPS() float64 {
@@ -58,6 +67,7 @@ func newWeaponFromItem(item *Item, bonusDps float64) Weapon {
 		SwingSpeed:           item.SwingSpeed,
 		NormalizedSwingSpeed: normalizedWeaponSpeed,
 		AttackPowerPerDPS:    DefaultAttackPowerPerDPS,
+		BonusDamage:          item.BonusDamage,
 	}
 }
 
@@ -405,6 +415,11 @@ type AutoAttacks struct {
 	ranged WeaponAttack
 
 	enabled bool
+
+	// Passive spells (one per school) used to calculate weapon bonus damage, and the
+	// schools needed in addition to the ones on the initially equipped weapons (item swaps).
+	bonusDamageSpells map[SpellSchool]*Spell
+	ExtraBonusSchools []SpellSchool
 }
 
 // Options for initializing auto attacks.
@@ -469,6 +484,7 @@ func (unit *Unit) EnableAutoAttacks(agent Agent, options AutoAttackOptions) {
 
 			baseDamage := autoInProgress.Unit.MHWeaponDamage(sim, autoInProgress.MeleeAttackPower(target))
 			result := autoInProgress.CalcDamage(sim, target, baseDamage, autoInProgress.OutcomeMeleeWhite)
+			autoInProgress.Unit.AutoAttacks.AddWeaponBonusDamage(sim, autoInProgress.Unit.AutoAttacks.MH(), spell, result)
 
 			StartDelayedAction(sim, DelayedActionOptions{
 				DoAt: sim.CurrentTime + SpellBatchWindow,
@@ -498,6 +514,7 @@ func (unit *Unit) EnableAutoAttacks(agent Agent, options AutoAttackOptions) {
 			autoInProgress := *spell
 			baseDamage := autoInProgress.Unit.OHWeaponDamage(sim, autoInProgress.MeleeAttackPower(target))
 			result := autoInProgress.CalcDamage(sim, target, baseDamage, autoInProgress.OutcomeMeleeWhite)
+			autoInProgress.Unit.AutoAttacks.AddWeaponBonusDamage(sim, autoInProgress.Unit.AutoAttacks.OH(), spell, result)
 
 			StartDelayedAction(sim, DelayedActionOptions{
 				DoAt: sim.CurrentTime + SpellBatchWindow,
@@ -526,6 +543,7 @@ func (unit *Unit) EnableAutoAttacks(agent Agent, options AutoAttackOptions) {
 		ApplyEffects: func(sim *Simulation, target *Unit, spell *Spell) {
 			baseDamage := spell.Unit.RangedWeaponDamage(sim, spell.RangedAttackPower(target, false))
 			result := spell.CalcDamage(sim, target, baseDamage, spell.OutcomeRangedHitAndCrit)
+			spell.Unit.AutoAttacks.AddWeaponBonusDamage(sim, spell.Unit.AutoAttacks.Ranged(), spell, result)
 
 			spell.WaitTravelTime(sim, func(sim *Simulation) {
 				spell.DealDamage(sim, result)
@@ -550,6 +568,8 @@ func (unit *Unit) EnableAutoAttacks(agent Agent, options AutoAttackOptions) {
 }
 
 func (aa *AutoAttacks) finalize() {
+	aa.registerWeaponBonusDamageSpells()
+
 	if aa.AutoSwingMelee {
 		aa.mh.spell = aa.mh.unit.GetOrRegisterSpell(aa.mh.config)
 		aa.mh.spell.TagSplitMetric(1, tagExtraAttack)
@@ -560,6 +580,86 @@ func (aa *AutoAttacks) finalize() {
 	if aa.AutoSwingRanged {
 		aa.ranged.spell = aa.ranged.unit.GetOrRegisterSpell(aa.ranged.config)
 		aa.ranged.spell.TagSplitMetric(1, tagExtraAttack)
+	}
+}
+
+func (aa *AutoAttacks) registerWeaponBonusDamageSpells() {
+	var unit *Unit
+	var schools []SpellSchool
+	if aa.AutoSwingMelee {
+		unit = aa.mh.unit
+		for _, b := range aa.mh.BonusDamage {
+			schools = append(schools, b.School)
+		}
+		for _, b := range aa.oh.BonusDamage {
+			schools = append(schools, b.School)
+		}
+	}
+	if aa.AutoSwingRanged {
+		unit = aa.ranged.unit
+		for _, b := range aa.ranged.BonusDamage {
+			schools = append(schools, b.School)
+		}
+	}
+	if unit == nil {
+		return
+	}
+	schools = append(schools, aa.ExtraBonusSchools...)
+
+	for _, school := range schools {
+		if _, ok := aa.bonusDamageSpells[school]; ok {
+			continue
+		}
+		if aa.bonusDamageSpells == nil {
+			aa.bonusDamageSpells = make(map[SpellSchool]*Spell)
+		}
+		// The bonus damage is part of the weapon hit: it has no hit roll or procs of its own and
+		// no metrics of its own, its damage and threat are added to the white hit's result.
+		aa.bonusDamageSpells[school] = unit.RegisterSpell(SpellConfig{
+			ActionID:    ActionID{OtherID: proto.OtherAction_OtherActionAttack, Tag: 100 + int32(school)},
+			SpellSchool: school,
+			DefenseType: DefenseTypeMagic,
+			ProcMask:    ProcMaskEmpty,
+			Flags:       SpellFlagNoMetrics | SpellFlagNoLogs | SpellFlagNoOnCastComplete | SpellFlagNoOnDamageDealt | SpellFlagPassiveSpell,
+
+			DamageMultiplier: 1,
+			ThreatMultiplier: 1,
+		})
+	}
+}
+
+// AddWeaponBonusDamage adds the weapon's extra school damage (e.g. "+4 - 10 Fire Damage") to a landed
+// white hit of that weapon. The extra damage ignores armor, can be partially resisted by the target's
+// resistance of that school, and is multiplied like the parent hit when it crits or glances.
+// Must be called after the parent's CalcDamage() and before its DealDamage().
+func (aa *AutoAttacks) AddWeaponBonusDamage(sim *Simulation, weapon *Weapon, parent *Spell, result *SpellResult) {
+	if len(weapon.BonusDamage) == 0 || !result.Landed() {
+		return
+	}
+
+	attackTable := parent.Unit.AttackTables[result.Target.UnitIndex][parent.CastType]
+	outcomeMultiplier := 1.0
+	if result.DidCrit() {
+		outcomeMultiplier = parent.CritMultiplier(attackTable)
+	} else if result.DidGlance() {
+		outcomeMultiplier = (attackTable.GlanceMultiplierMin + attackTable.GlanceMultiplierMax) / 2
+	}
+	outcome := result.Outcome & (OutcomeHit | OutcomeCrit | OutcomeGlance)
+	outcomeApplier := func(_ *Simulation, bonusResult *SpellResult, _ *AttackTable) {
+		bonusResult.Outcome = outcome
+		bonusResult.Damage *= outcomeMultiplier
+	}
+
+	for _, bonus := range weapon.BonusDamage {
+		spell := aa.bonusDamageSpells[bonus.School]
+		if spell == nil {
+			continue
+		}
+		baseDamage := sim.Roll(bonus.Min, bonus.Max)
+		bonusResult := spell.CalcDamage(sim, result.Target, baseDamage, outcomeApplier)
+		result.Damage += bonusResult.Damage
+		result.Threat += bonusResult.Threat
+		spell.DisposeResult(bonusResult)
 	}
 }
 
