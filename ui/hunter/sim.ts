@@ -76,29 +76,37 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 		// Default equipped gear.
 		gear: Presets.DefaultGear.gear,
 		// Default EP weights for sorting gear in the gear picker.
+		// Measured 2026-11-21 (OctoWoW rules) with the UI defaults: Troll, Enchanting/Engineering, 12 yd, BM talents, BM (buffed)
+		// APL, Thorium Headed Arrow, 15% quiver, Cat at 1.2 attack speed, default consumes/raid/individual buffs/debuffs, no party
+		// buffs, 120 s. Paired-seed DPS deltas at 20k iterations, averaged over the BM Pre-BiS and current-eadi sets.
+		// Melee AP, Strength, Stamina and melee weapon stats are worth nothing to a ranged BM rotation (the pet does not scale with them).
+		// Hit is the below-cap value (BM Pre-BiS sits at the 8% cap, so extra hit there is worth ~0).
+		// Ranged speed is the slope of a linear fit over -5%..+5%: auto-shot timing locks onto the GCD grid, so single-point values swing.
+		// Weapon skill: 5 skill = 1% hit. Only Guns (the default gear's weapon) is weighted, so gear with +bows/crossbows/guns skill
+		// counts once; users of a bow or crossbow should run stat weights.
 		epWeights: Stats.fromMap(
 			{
-				[Stat.StatStrength]: 0.3,
-				[Stat.StatAgility]: 0.64,
-				[Stat.StatStamina]: 0.0,
-				[Stat.StatIntellect]: 0.02,
-				[Stat.StatAttackPower]: 1,
+				[Stat.StatStrength]: 0,
+				[Stat.StatAgility]: 2.41,
+				[Stat.StatStamina]: 0,
+				[Stat.StatIntellect]: 0.16,
+				[Stat.StatAttackPower]: 0,
 				[Stat.StatRangedAttackPower]: 1.0,
-				[Stat.StatMeleeHit]: 3.29,
-				[Stat.StatMeleeCrit]: 4.45,
-				[Stat.StatSpellPower]: 0.03,
-				[Stat.StatNaturePower]: 0.01,
-				[Stat.StatArcanePower]: 0.01,
-				[Stat.StatSpellCrit]: 0.01,
-				[Stat.StatMP5]: 0.05,
-				[Stat.StatFireResistance]: 0.5,
+				[Stat.StatMeleeHit]: 25.14,
+				[Stat.StatMeleeCrit]: 21.57,
+				[Stat.StatSpellPower]: 0.16,
+				[Stat.StatNaturePower]: 0.16,
+				[Stat.StatArcanePower]: 0,
+				[Stat.StatSpellCrit]: 0,
+				[Stat.StatMP5]: 0.26,
 			},
 			{
-				[PseudoStat.PseudoStatMainHandDps]: 2.11,
-				[PseudoStat.PseudoStatOffHandDps]: 1.39,
-				[PseudoStat.PseudoStatRangedDps]: 6.32,
-				[PseudoStat.PseudoStatMeleeSpeedMultiplier]: 1.39,
-				[PseudoStat.PseudoStatRangedSpeedMultiplier]: 6.32,
+				[PseudoStat.PseudoStatMainHandDps]: 0,
+				[PseudoStat.PseudoStatOffHandDps]: 0,
+				[PseudoStat.PseudoStatRangedDps]: 8.86,
+				[PseudoStat.PseudoStatMeleeSpeedMultiplier]: 0,
+				[PseudoStat.PseudoStatRangedSpeedMultiplier]: 9.67,
+				[PseudoStat.PseudoStatGunsSkill]: 5.03,
 			},
 		),
 		// Default consumes settings.
