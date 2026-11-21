@@ -256,8 +256,8 @@ enum RaidFilterOption {
 	RaidOnyxiasLair				= 2159;
 	RaidBlackwingLair			= 2677;
 	RaidZulGurub				= 1977;
-	RaidRuinsOfAQ 				= 3428;
-	RaidTempleOfAQ 				= 3429;
+	RaidRuinsOfAQ 				= 3429;
+	RaidTempleOfAQ 				= 3428;
 	RaidNaxxramas 				= 3456;
 }
 
