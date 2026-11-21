@@ -8,10 +8,15 @@ import (
 )
 
 // Turtle WoW Arcane Shot deals a percentage of ranged weapon damage plus flat Arcane damage.
+// The flat Arcane part scales with Arcane + generic spell power. Coefficients are the
+// effectBonusCoefficient1 values from the Turtle 1.17.1 server spell_template (pre-rework
+// spell; 0.429 = 1.5/3.5 from rank 3 on). Turtle's 2026-01-23 rework that added the
+// ranged-weapon scaling states "Existing Spell Power scaling is unchanged".
 func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.SpellConfig {
 	spellId := [9]int32{0, 3044, 14281, 14282, 14283, 14284, 14285, 14286, 14287}[rank]
 	baseDamage := [9]float64{0, 10, 17, 29, 48, 71, 101, 129, 166}[rank]
 	weaponMultiplier := [9]float64{0, .10, .15, .20, .25, .30, .35, .40, .45}[rank]
+	spellCoeff := [9]float64{0, .204, .3, .429, .429, .429, .429, .429, .429}[rank]
 	manaCost := [9]float64{0, 20, 25, 35, 55, 70, 90, 105, 125}[rank]
 	level := [9]int{0, 6, 12, 20, 28, 36, 44, 52, 60}[rank]
 
@@ -48,6 +53,7 @@ func (hunter *Hunter) getArcaneShotConfig(rank int, timer *core.Timer) core.Spel
 
 		DamageMultiplier: 1,
 		ThreatMultiplier: 1,
+		BonusCoefficient: spellCoeff,
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
 			damage := weaponMultiplier*hunter.rangedWeaponDamage(sim, spell, target, false) + baseDamage

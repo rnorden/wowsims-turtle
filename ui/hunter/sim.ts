@@ -82,6 +82,8 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 		// Melee AP, Strength, Stamina and melee weapon stats are worth nothing to a ranged BM rotation (the pet does not scale with them).
 		// Hit is the below-cap value (BM Pre-BiS sits at the 8% cap, so extra hit there is worth ~0).
 		// Ranged speed is the slope of a linear fit over -5%..+5%: auto-shot timing locks onto the GCD grid, so single-point values swing.
+		// Spell Power / Arcane Power re-measured after Arcane Shot gained its 0.429 spell power coefficient (Serpent Sting is the
+		// only Nature scaler, Arcane Shot the only Arcane one; generic Spell Power feeds both).
 		// Weapon skill: 5 skill = 1% hit. Only Guns (the default gear's weapon) is weighted, so gear with +bows/crossbows/guns skill
 		// counts once; users of a bow or crossbow should run stat weights.
 		epWeights: Stats.fromMap(
@@ -94,9 +96,10 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 				[Stat.StatRangedAttackPower]: 1.0,
 				[Stat.StatMeleeHit]: 25.14,
 				[Stat.StatMeleeCrit]: 21.57,
-				[Stat.StatSpellPower]: 0.16,
+				[Stat.StatSpellPower]: 0.42,
+				[Stat.StatSpellDamage]: 0.42,
 				[Stat.StatNaturePower]: 0.16,
-				[Stat.StatArcanePower]: 0,
+				[Stat.StatArcanePower]: 0.26,
 				[Stat.StatSpellCrit]: 0,
 				[Stat.StatMP5]: 0.26,
 			},
