@@ -3,8 +3,10 @@ on:
     push:
         branches:
             - master
-            - hunter-turtle-port
     workflow_dispatch:
+concurrency:
+    group: pages-deploy
+    cancel-in-progress: false
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
@@ -44,6 +46,7 @@ jobs:
                   make test
 
             - name: Deploy to GitHub Pages 🚀
+              if: github.ref == 'refs/heads/master'
               uses: JamesIves/github-pages-deploy-action@v4
               with:
                   branch: gh-pages
