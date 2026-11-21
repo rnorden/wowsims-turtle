@@ -70,7 +70,7 @@ stat_weights_results: {
   weights: 0
   weights: 0
   weights: 0.0716
-  weights: 0
+  weights: 2.50365
   weights: 1.717
   weights: 0
   weights: 0
@@ -103,8 +103,8 @@ stat_weights_results: {
 dps_results: {
  key: "TestShockadin-Phase5-AllItems-Avenger'sBattlegear"
  value: {
-  dps: 409.6848
-  tps: 448.34415
+  dps: 411.65274
+  tps: 450.38585
  }
 }
 dps_results: {

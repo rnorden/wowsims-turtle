@@ -49,6 +49,12 @@ type StatWeightValues struct {
 	WeightsStdev  UnitStats
 	EpValues      UnitStats
 	EpValuesStdev UnitStats
+
+	// One-sided weights, from lowering (loss) or raising (gain) the stat only.
+	WeightsLoss  UnitStats
+	WeightsGain  UnitStats
+	EpValuesLoss UnitStats
+	EpValuesGain UnitStats
 }
 
 func NewStatWeightValues() StatWeightValues {
@@ -57,6 +63,10 @@ func NewStatWeightValues() StatWeightValues {
 		WeightsStdev:  NewUnitStats(),
 		EpValues:      NewUnitStats(),
 		EpValuesStdev: NewUnitStats(),
+		WeightsLoss:   NewUnitStats(),
+		WeightsGain:   NewUnitStats(),
+		EpValuesLoss:  NewUnitStats(),
+		EpValuesGain:  NewUnitStats(),
 	}
 }
 
@@ -66,6 +76,8 @@ func (swv *StatWeightValues) ToProto() *proto.StatWeightValues {
 		WeightsStdev:  swv.WeightsStdev.ToProto(),
 		EpValues:      swv.EpValues.ToProto(),
 		EpValuesStdev: swv.EpValuesStdev.ToProto(),
+		EpValuesLoss:  swv.EpValuesLoss.ToProto(),
+		EpValuesGain:  swv.EpValuesGain.ToProto(),
 	}
 }
 
@@ -205,6 +217,14 @@ func computeStatWeights(swcr *proto.StatWeightsCalcRequest) *proto.StatWeightsRe
 	}
 
 	result := NewStatWeightsResult()
+
+	// Per-iteration weight samples, kept so EP uncertainty can be computed from paired
+	// differences against the reference stat (both share the same RNG streams).
+	samples := map[*StatWeightValues]map[stats.UnitStat]*weightSamples{}
+	for _, wv := range []*StatWeightValues{&result.Dps, &result.Hps, &result.Tps, &result.Dtps, &result.Tmi} {
+		samples[wv] = map[stats.UnitStat]*weightSamples{}
+	}
+
 	for _, statResult := range swcr.StatSimResults {
 		stat := stats.UnitStatFromIdx(int(statResult.StatData.UnitStat))
 
@@ -212,24 +232,47 @@ func computeStatWeights(swcr *proto.StatWeightsCalcRequest) *proto.StatWeightsRe
 		modPlayerLow := statResult.ResultLow.RaidMetrics.Parties[0].Players[0]
 		modPlayerHigh := statResult.ResultHigh.RaidMetrics.Parties[0].Players[0]
 
-		// Check for hard caps. Hard caps will have results identical to the baseline because RNG is fixed.
-		// When we find a hard-capped stat, just skip it (will return 0).
-		if modPlayerHigh.Dps.Avg == baselinePlayer.Dps.Avg && modPlayerHigh.Hps.Avg == baselinePlayer.Hps.Avg && modPlayerHigh.Tmi.Avg == baselinePlayer.Tmi.Avg {
-			continue
-		}
-
 		calcWeightResults := func(baselineMetrics *proto.DistributionMetrics, modLowMetrics *proto.DistributionMetrics, modHighMetrics *proto.DistributionMetrics, weightResults *StatWeightValues) {
-			var lo, hi aggregator
-			for i := 0; i < len(baselineMetrics.AllValues); i++ {
-				lo.add(modLowMetrics.AllValues[i] - baselineMetrics.AllValues[i])
+			// RNG is fixed, so a side whose average is identical to the baseline did not change
+			// anything, e.g. raising a stat that is already at its cap. Lowering it can still matter,
+			// so measure the weight from whichever sides moved instead of discarding the stat.
+			lowFlat := modLowMetrics.Avg == baselineMetrics.Avg
+			highFlat := modHighMetrics.Avg == baselineMetrics.Avg
+			if lowFlat && highFlat {
+				return
 			}
-			lo.scale(1 / statResult.StatData.ModLow)
-			for i := 0; i < len(baselineMetrics.AllValues); i++ {
-				hi.add(modHighMetrics.AllValues[i] - baselineMetrics.AllValues[i])
-			}
-			hi.scale(1 / statResult.StatData.ModHigh)
 
-			mean, stdev := lo.merge(&hi).meanAndStdDev()
+			n := len(baselineMetrics.AllValues)
+			ws := &weightSamples{lo: make([]float64, n), hi: make([]float64, n), useLo: !lowFlat, useHi: !highFlat}
+			var lo, hi aggregator
+			for i := 0; i < n; i++ {
+				ws.lo[i] = (modLowMetrics.AllValues[i] - baselineMetrics.AllValues[i]) / statResult.StatData.ModLow
+				lo.add(ws.lo[i])
+			}
+			for i := 0; i < n; i++ {
+				ws.hi[i] = (modHighMetrics.AllValues[i] - baselineMetrics.AllValues[i]) / statResult.StatData.ModHigh
+				hi.add(ws.hi[i])
+			}
+			samples[weightResults][stat] = ws
+
+			lossMean, _ := lo.meanAndStdDev()
+			gainMean, _ := hi.meanAndStdDev()
+			weightResults.WeightsLoss.AddStat(stat, lossMean)
+			weightResults.WeightsGain.AddStat(stat, gainMean)
+
+			var mean, stdev float64
+			switch {
+			// Weight stdevs are per sample and get divided by sqrt(total iterations) for display.
+			// A one-sided weight only has half the samples, so scale its stdev to keep that correct.
+			case highFlat:
+				mean, stdev = lo.meanAndStdDev()
+				stdev *= math.Sqrt2
+			case lowFlat:
+				mean, stdev = hi.meanAndStdDev()
+				stdev *= math.Sqrt2
+			default:
+				mean, stdev = lo.merge(&hi).meanAndStdDev()
+			}
 			weightResults.Weights.AddStat(stat, mean)
 			weightResults.WeightsStdev.AddStat(stat, stdev)
 		}
@@ -239,6 +282,9 @@ func computeStatWeights(swcr *proto.StatWeightsCalcRequest) *proto.StatWeightsRe
 		calcWeightResults(baselinePlayer.Threat, modPlayerLow.Threat, modPlayerHigh.Threat, &result.Tps)
 		calcWeightResults(baselinePlayer.Dtps, modPlayerLow.Dtps, modPlayerHigh.Dtps, &result.Dtps)
 		calcWeightResults(baselinePlayer.Tmi, modPlayerLow.Tmi, modPlayerHigh.Tmi, &result.Tmi)
+		if modPlayerLow.ChanceOfDeath == baselinePlayer.ChanceOfDeath && modPlayerHigh.ChanceOfDeath == baselinePlayer.ChanceOfDeath {
+			continue
+		}
 		meanLow := (modPlayerLow.ChanceOfDeath - baselinePlayer.ChanceOfDeath) / statResult.StatData.ModLow
 		meanHigh := (modPlayerHigh.ChanceOfDeath - baselinePlayer.ChanceOfDeath) / statResult.StatData.ModHigh
 		result.PDeath.Weights.AddStat(stat, (meanLow+meanHigh)/2)
@@ -255,10 +301,18 @@ func computeStatWeights(swcr *proto.StatWeightsCalcRequest) *proto.StatWeightsRe
 			if weightResults.Weights.Stats[refStat] == 0 {
 				return
 			}
-			mean := weightResults.Weights.Get(stat) / weightResults.Weights.Stats[refStat]
-			stdev := weightResults.WeightsStdev.Get(stat) / math.Abs(weightResults.Weights.Stats[refStat])
+			refWeight := weightResults.Weights.Stats[refStat]
+			mean := weightResults.Weights.Get(stat) / refWeight
+			stdev := weightResults.WeightsStdev.Get(stat) / math.Abs(refWeight)
+			if s, r := samples[weightResults][stat], samples[weightResults][stats.UnitStatFromStat(refStat)]; s != nil && r != nil {
+				if sd, ok := s.epStdev(r, mean, refWeight); ok {
+					stdev = sd
+				}
+			}
 			weightResults.EpValues.AddStat(stat, mean)
 			weightResults.EpValuesStdev.AddStat(stat, stdev)
+			weightResults.EpValuesLoss.AddStat(stat, weightResults.WeightsLoss.Get(stat)/weightResults.Weights.Stats[refStat])
+			weightResults.EpValuesGain.AddStat(stat, weightResults.WeightsGain.Get(stat)/weightResults.Weights.Stats[refStat])
 		}
 
 		calcEpResults(&result.Dps, referenceStat)
@@ -352,4 +406,37 @@ func runStatWeights(request *proto.StatWeightsRequest, progress chan *proto.Prog
 		EpReferenceStat: requestData.EpReferenceStat,
 		StatSimResults:  statResults,
 	})
+}
+
+type weightSamples struct {
+	lo, hi       []float64 // per-iteration weight samples from the lowered / raised sims
+	useLo, useHi bool      // which sides contribute to the weight
+}
+
+// Standard deviation (per sample, same convention as WeightsStdev) of EP = w/w_ref, using the
+// delta method on paired samples: EP noise comes from (w_i - EP*ref_i), so noise that the stat
+// and reference sims share through common RNG cancels out instead of being ignored.
+func (s *weightSamples) epStdev(ref *weightSamples, ep float64, refWeight float64) (float64, bool) {
+	if (s.useLo && !ref.useLo) || (s.useHi && !ref.useHi) || len(s.lo) != len(ref.lo) {
+		return 0, false
+	}
+	var agg aggregator
+	sides := 0
+	if s.useLo {
+		sides++
+		for i := range s.lo {
+			agg.add(s.lo[i] - ep*ref.lo[i])
+		}
+	}
+	if s.useHi {
+		sides++
+		for i := range s.hi {
+			agg.add(s.hi[i] - ep*ref.hi[i])
+		}
+	}
+	_, sd := agg.meanAndStdDev()
+	if sides == 1 {
+		sd *= math.Sqrt2
+	}
+	return sd / math.Abs(refWeight), true
 }

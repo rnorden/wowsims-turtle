@@ -4,14 +4,17 @@ package core
 //                            Weapon Specialization Auras
 ///////////////////////////////////////////////////////////////////////////
 
+// Turtle WoW patch 1.17.2: "Reduced the amount of weapon skill granted by racials from +5 to +3."
+const RacialWeaponSkillBonus = 3
+
 func (character *Character) SwordSpecializationAura() *Aura {
 	return character.GetOrRegisterAura(Aura{
 		Label:      "Sword Skill Specialization",
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.SwordsSkill += 5
-			character.PseudoStats.TwoHandedSwordsSkill += 5
+			character.PseudoStats.SwordsSkill += RacialWeaponSkillBonus
+			character.PseudoStats.TwoHandedSwordsSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -22,8 +25,8 @@ func (character *Character) AxeSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.AxesSkill += 5
-			character.PseudoStats.TwoHandedAxesSkill += 5
+			character.PseudoStats.AxesSkill += RacialWeaponSkillBonus
+			character.PseudoStats.TwoHandedAxesSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -34,8 +37,8 @@ func (character *Character) MaceSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.MacesSkill += 5
-			character.PseudoStats.TwoHandedMacesSkill += 5
+			character.PseudoStats.MacesSkill += RacialWeaponSkillBonus
+			character.PseudoStats.TwoHandedMacesSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -46,7 +49,7 @@ func (character *Character) DaggerSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.DaggersSkill += 5
+			character.PseudoStats.DaggersSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -57,7 +60,7 @@ func (character *Character) FistWeaponSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.UnarmedSkill += 5
+			character.PseudoStats.UnarmedSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -68,8 +71,8 @@ func (character *Character) PoleWeaponSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.StavesSkill += 5
-			character.PseudoStats.PolearmsSkill += 5
+			character.PseudoStats.StavesSkill += RacialWeaponSkillBonus
+			character.PseudoStats.PolearmsSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -80,7 +83,7 @@ func (character *Character) GunSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.GunsSkill += 5
+			character.PseudoStats.GunsSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -91,7 +94,7 @@ func (character *Character) BowSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.BowsSkill += 5
+			character.PseudoStats.BowsSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -102,7 +105,7 @@ func (character *Character) CrossbowSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.CrossbowsSkill += 5
+			character.PseudoStats.CrossbowsSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -113,7 +116,7 @@ func (character *Character) ThrownSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.ThrownSkill += 5
+			character.PseudoStats.ThrownSkill += RacialWeaponSkillBonus
 		},
 	})
 }
@@ -124,7 +127,7 @@ func (character *Character) FeralCombatSpecializationAura() *Aura {
 		BuildPhase: CharacterBuildPhaseGear,
 		Duration:   NeverExpires,
 		OnGain: func(aura *Aura, sim *Simulation) {
-			character.PseudoStats.FeralCombatSkill += 5
+			character.PseudoStats.FeralCombatSkill += RacialWeaponSkillBonus
 		},
 	})
 }

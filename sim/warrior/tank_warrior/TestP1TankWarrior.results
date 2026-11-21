@@ -103,8 +103,8 @@ stat_weights_results: {
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-BattlegearofMight"
  value: {
-  dps: 190.58676
-  tps: 186.43193
+  dps: 194.01619
+  tps: 189.98273
  }
 }
 dps_results: {
@@ -117,36 +117,36 @@ dps_results: {
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-Champion'sBattlearmor"
  value: {
-  dps: 201.07571
-  tps: 196.13213
+  dps: 203.01103
+  tps: 197.91685
  }
 }
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-Conqueror'sBattlegear"
  value: {
-  dps: 217.36177
-  tps: 211.94118
+  dps: 217.56429
+  tps: 211.71352
  }
 }
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-Dreadnaught'sBattlegear"
  value: {
-  dps: 200.00913
-  tps: 195.82508
+  dps: 200.25059
+  tps: 196.20466
  }
 }
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-FieldMarshal'sBattlegear"
  value: {
-  dps: 219.65368
-  tps: 214.08005
+  dps: 222.61991
+  tps: 217.17542
  }
 }
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-LieutenantCommander'sBattlearmor"
  value: {
-  dps: 201.07571
-  tps: 196.13213
+  dps: 203.01103
+  tps: 197.91685
  }
 }
 dps_results: {
@@ -173,8 +173,8 @@ dps_results: {
 dps_results: {
  key: "TestP1TankWarrior-Phase1-AllItems-Warlord'sBattlegear"
  value: {
-  dps: 219.65368
-  tps: 214.08005
+  dps: 222.61991
+  tps: 217.17542
  }
 }
 dps_results: {

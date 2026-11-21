@@ -52,12 +52,12 @@ character_stats_results: {
 stat_weights_results: {
  key: "TestExodin-Phase5-StatWeights-Default"
  value: {
-  weights: 0.20122
-  weights: 0.1659
+  weights: 0.20336
+  weights: 0.15235
   weights: 0
   weights: 0
   weights: 0
-  weights: 0.34888
+  weights: 0.35156
   weights: 0
   weights: 0
   weights: 0
@@ -65,13 +65,13 @@ stat_weights_results: {
   weights: 0
   weights: 0
   weights: 0
-  weights: 2.01074
-  weights: 0.29886
+  weights: 2.24103
+  weights: 0.28063
   weights: 0
   weights: 0
-  weights: 0.08315
-  weights: 1.87699
-  weights: 2.70411
+  weights: 0.08403
+  weights: 2.3007
+  weights: 2.56471
   weights: 0
   weights: 0
   weights: 0
@@ -103,57 +103,57 @@ stat_weights_results: {
 dps_results: {
  key: "TestExodin-Phase5-AllItems-Avenger'sBattlegear"
  value: {
-  dps: 448.97478
-  tps: 487.63666
+  dps: 451.70899
+  tps: 490.41495
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-FieldMarshal'sAegis"
  value: {
-  dps: 436.27872
-  tps: 474.9662
+  dps: 435.98616
+  tps: 474.67364
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-Freethinker'sArmor"
  value: {
-  dps: 365.14903
-  tps: 403.49685
+  dps: 369.42153
+  tps: 407.9906
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-JudgementArmor"
  value: {
-  dps: 383.50829
-  tps: 423.74538
+  dps: 390.21788
+  tps: 430.9087
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-LawbringerArmor"
  value: {
-  dps: 356.10424
-  tps: 394.84731
+  dps: 357.96468
+  tps: 396.79625
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-LieutenantCommander'sRedoubt"
  value: {
-  dps: 405.74368
-  tps: 443.87451
+  dps: 410.21846
+  tps: 448.61971
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-AllItems-RedemptionArmor"
  value: {
-  dps: 368.46218
-  tps: 407.62885
+  dps: 369.94755
+  tps: 409.17814
  }
 }
 dps_results: {
  key: "TestExodin-Phase5-Average-Default"
  value: {
-  dps: 335.26706
-  tps: 373.4347
+  dps: 337.53056
+  tps: 375.83308
  }
 }
 dps_results: {
@@ -243,7 +243,7 @@ dps_results: {
 dps_results: {
  key: "TestExodin-Phase5-SwitchInFrontOfTarget-Default"
  value: {
-  dps: 304.14401
-  tps: 340.35085
+  dps: 306.5267
+  tps: 342.80307
  }
 }

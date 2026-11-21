@@ -304,15 +304,20 @@ func NewAttackTable(attacker *Unit, defender *Unit, weapon *Item) *AttackTable {
 
 	if defender.Type == EnemyUnit {
 		baseWeaponSkill := float64(attacker.Level * 5)
-		weaponSkill := baseWeaponSkill + GetWeaponSkill(attacker, weapon)
+		// OctoWoW 1.17.2: weapon skill caps at level*5 + 15 (315 at level 60).
+		weaponSkill := min(baseWeaponSkill+GetWeaponSkill(attacker, weapon), baseWeaponSkill+15)
 		targetDefense := float64(defender.Level * 5)
+		skillDiff := targetDefense - weaponSkill
 
-		if targetDefense-weaponSkill > 10 {
-			table.HitSuppression = (targetDefense - weaponSkill - 10) * 0.002
-			table.BaseMissChance = 0.05 + (targetDefense-weaponSkill)*0.002
+		// OctoWoW 1.17.2 removed the 1% hit suppression vs +3 level targets and the 305 skill
+		// soft cap: every point of skill below the target's defense is a flat 0.2% miss chance
+		// (300 skill vs 315 defense = 8% miss/hit cap, 315 skill = 5%).
+		// Skill above the target's defense (lower-level mobs only) keeps the vanilla 0.1% per point.
+		table.HitSuppression = 0
+		if skillDiff >= 0 {
+			table.BaseMissChance = 0.05 + skillDiff*0.002
 		} else {
-			table.HitSuppression = 0
-			table.BaseMissChance = 0.05 + (targetDefense-weaponSkill)*0.001
+			table.BaseMissChance = 0.05 + skillDiff*0.001
 		}
 
 		if targetDefense-baseWeaponSkill > 10 {
@@ -323,11 +328,16 @@ func NewAttackTable(attacker *Unit, defender *Unit, weapon *Item) *AttackTable {
 
 		table.BaseSpellMissChance = UnitLevelFloat64(defender.Level-attacker.Level, 0.04, 0.05, 0.06, 0.17)
 		table.BaseBlockChance = 0.05
-		table.BaseDodgeChance = 0.05 + (targetDefense-weaponSkill)*0.001
+		table.BaseDodgeChance = 0.05 + skillDiff*0.001
 		table.BaseGlanceChance = 0.1 + (targetDefense-baseWeaponSkill)*0.02
 
-		table.GlanceMultiplierMin = max(min(1.3-0.05*(targetDefense-weaponSkill), 0.91), 0.01)
-		table.GlanceMultiplierMax = max(min(1.2-0.03*(targetDefense-weaponSkill), 0.99), 0.2)
+		// OctoWoW 1.17.2: each point of skill reduces the glancing penalty by 2%, so the mean
+		// glance damage is 65% at 300 skill vs 315 defense, rising linearly to 95% at 315.
+		// Damage is rolled uniformly in [min, max]; the endpoints interpolate between the vanilla
+		// 0.55-0.75 (300 skill) and 0.91-0.99 (315 skill) ranges.
+		glanceT := max(min((15-skillDiff)/15, 1), 0)
+		table.GlanceMultiplierMin = 0.55 + 0.36*glanceT
+		table.GlanceMultiplierMax = 0.75 + 0.24*glanceT
 
 		if targetDefense > baseWeaponSkill {
 			table.MeleeCritSuppression = (targetDefense - baseWeaponSkill) * 0.002

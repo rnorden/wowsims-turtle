@@ -542,6 +542,12 @@ message StatWeightValues {
 	UnitStats weights_stdev = 2;
 	UnitStats ep_values = 3;
 	UnitStats ep_values_stdev = 4;
+
+	// One-sided values: "loss" is measured by lowering the stat, "gain" by raising it.
+	// They differ when the current gear sits at or near a cap (e.g. hit), where gaining
+	// more of the stat is worth less than losing some.
+	UnitStats ep_values_loss = 5;
+	UnitStats ep_values_gain = 6;
 }
 
 message AsyncAPIResult {
