@@ -429,8 +429,10 @@ func (unit *Unit) ArmorPenetrationPercentage(armorPenRating float64) float64 {
 	return max(min(armorPenRating/ArmorPenPerPercentArmor, 100.0)*0.01, 0.0)
 }
 
+// RangedSwingSpeed mirrors SwingSpeed: attack speed from items, enchants, bonus stats and buffs is
+// already folded into RangedSpeedMultiplier, so the MeleeHaste stat must not be applied again here.
 func (unit *Unit) RangedSwingSpeed() float64 {
-	return unit.PseudoStats.RangedSpeedMultiplier * (1 + (unit.stats[stats.MeleeHaste] / (HasteRatingPerHastePercent * 100)))
+	return unit.PseudoStats.RangedSpeedMultiplier
 }
 
 // MultiplyMeleeSpeed will alter the attack speed multiplier and change swing speed of all autoattack swings in progress.

@@ -103,6 +103,8 @@ var ItemSetArcanistsVestments = core.NewItemSet(core.ItemSet{
 				stats.SpellHaste: 2,
 			})
 			mage.MultiplyCastSpeed(1.02)
+			mage.PseudoStats.MeleeSpeedMultiplier *= 1.02
+			mage.PseudoStats.RangedSpeedMultiplier *= 1.02
 		},
 		// Your damaging Arcane spells have a 10% chance to restore 50 mana over 5 sec.
 		5: func(agent core.Agent) {
