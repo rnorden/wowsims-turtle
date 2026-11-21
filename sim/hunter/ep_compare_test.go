@@ -385,6 +385,10 @@ func epcCandidates(slot proto.ItemSlot, gear *proto.EquipmentSpec) []core.Item {
 	}
 	var out []core.Item
 	for _, it := range core.ItemsByID {
+		// An empty class allowlist means any class can use the item; Matches would reject it.
+		if len(it.ClassAllowlist) == 0 {
+			it.ClassAllowlist = []proto.Class{proto.Class_ClassHunter}
+		}
 		if !filter.Matches(it, true) || it.ID == other {
 			continue
 		}
