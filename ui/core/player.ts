@@ -31,6 +31,7 @@ import {
 	Stat,
 	UnitReference,
 	UnitStats,
+	WeaponSkill,
 	WeaponType,
 } from './proto/common.js';
 import {
@@ -46,7 +47,7 @@ import { ActionId } from './proto_utils/action_id.js';
 import { Database } from './proto_utils/database.js';
 import { EquippedItem, getWeaponDPS } from './proto_utils/equipped_item.js';
 import { Gear, ItemSwapGear } from './proto_utils/gear.js';
-import { Stats } from './proto_utils/stats.js';
+import { Stats, UnitStat } from './proto_utils/stats.js';
 import {
 	canEquipEnchant,
 	canEquipItem,
@@ -218,6 +219,25 @@ export function getSpecConfig<SpecType extends Spec>(spec: SpecType): PlayerConf
 	return config;
 }
 
+// Item weapon skill bonuses (indexed by WeaponSkill) and the pseudo stat each one adds to.
+const weaponSkillPseudoStats: Map<WeaponSkill, PseudoStat> = new Map([
+	[WeaponSkill.WeaponSkillAxes, PseudoStat.PseudoStatAxesSkill],
+	[WeaponSkill.WeaponSkillSwords, PseudoStat.PseudoStatSwordsSkill],
+	[WeaponSkill.WeaponSkillMaces, PseudoStat.PseudoStatMacesSkill],
+	[WeaponSkill.WeaponSkillDaggers, PseudoStat.PseudoStatDaggersSkill],
+	[WeaponSkill.WeaponSkillUnarmed, PseudoStat.PseudoStatUnarmedSkill],
+	[WeaponSkill.WeaponSkillTwoHandedAxes, PseudoStat.PseudoStatTwoHandedAxesSkill],
+	[WeaponSkill.WeaponSkillTwoHandedSwords, PseudoStat.PseudoStatTwoHandedSwordsSkill],
+	[WeaponSkill.WeaponSkillTwoHandedMaces, PseudoStat.PseudoStatTwoHandedMacesSkill],
+	[WeaponSkill.WeaponSkillPolearms, PseudoStat.PseudoStatPolearmsSkill],
+	[WeaponSkill.WeaponSkillStaves, PseudoStat.PseudoStatStavesSkill],
+	[WeaponSkill.WeaponSkillThrown, PseudoStat.PseudoStatThrownSkill],
+	[WeaponSkill.WeaponSkillBows, PseudoStat.PseudoStatBowsSkill],
+	[WeaponSkill.WeaponSkillCrossbows, PseudoStat.PseudoStatCrossbowsSkill],
+	[WeaponSkill.WeaponSkillGuns, PseudoStat.PseudoStatGunsSkill],
+	[WeaponSkill.WeaponSkillFeralCombat, PseudoStat.PseudoStatFeralCombatSkill],
+]);
+
 // Manages all the gear / consumes / other settings for a single Player.
 export class Player<SpecType extends Spec> {
 	readonly sim: Sim;
@@ -260,7 +280,7 @@ export class Player<SpecType extends Spec> {
 
 	private itemEPCache = new Array<Map<number, number>>();
 	private randomSuffixEPCache = new Map<number, number>();
-	private enchantEPCache = new Map<number, number>();
+	private enchantEPCache = new Array<Map<number, number>>();
 	private talents: SpecTalents<SpecType> | null = null;
 
 	readonly specTypeFunctions: SpecTypeFunctions<SpecType>;
@@ -268,6 +288,12 @@ export class Player<SpecType extends Spec> {
 	private static readonly numEpRatios = 6;
 	private epRatios: Array<number> = new Array<number>(Player.numEpRatios).fill(0);
 	private epWeights: Stats = new Stats();
+	// EP measured only by raising each stat, combined with the same EP ratios as epWeights. A stat whose gain
+	// weight is 0 while its epWeights entry is not is treated as capped: more of it is worth nothing. Null when
+	// unknown (e.g. manually entered or preset weights), in which case item EP is purely linear.
+	private epWeightsGain: Stats | null = null;
+	// Stats considered capped, derived from epWeights / epWeightsGain.
+	private cappedEPStats: Array<UnitStat> = [];
 	private currentStats: PlayerStats = PlayerStats.create();
 	private metadata: UnitMetadata = new UnitMetadata();
 	private petMetadatas: UnitMetadataList = new UnitMetadataList();
@@ -318,9 +344,7 @@ export class Player<SpecType extends Spec> {
 			this.simpleRotationGenerator = null;
 		}
 
-		for (let i = 0; i < ItemSlot.ItemSlotRanged + 1; ++i) {
-			this.itemEPCache[i] = new Map();
-		}
+		this.clearEPCaches();
 
 		this.changeEmitter = TypedEvent.onAny(
 			[
@@ -431,14 +455,27 @@ export class Player<SpecType extends Spec> {
 		return this.epWeights;
 	}
 
-	setEpWeights(eventID: EventID, newEpWeights: Stats) {
-		this.epWeights = newEpWeights;
-		this.epWeightsChangeEmitter.emit(eventID);
+	getEpWeightsGain(): Stats | null {
+		return this.epWeightsGain;
+	}
 
-		this.enchantEPCache = new Map();
+	// newEpWeightsGain defaults to null, so any weights set without gain values (manual edits, presets,
+	// defaults, copied columns) are scored purely linearly.
+	setEpWeights(eventID: EventID, newEpWeights: Stats, newEpWeightsGain: Stats | null = null) {
+		this.epWeights = newEpWeights;
+		this.epWeightsGain = newEpWeightsGain;
+		this.cappedEPStats = newEpWeightsGain
+			? UnitStat.getAll().filter(stat => newEpWeights.getUnitStat(stat) !== 0 && newEpWeightsGain.getUnitStat(stat) === 0)
+			: [];
+		this.clearEPCaches();
+		this.epWeightsChangeEmitter.emit(eventID);
+	}
+
+	private clearEPCaches() {
 		this.randomSuffixEPCache = new Map();
 		for (let i = 0; i < ItemSlot.ItemSlotRanged + 1; ++i) {
 			this.itemEPCache[i] = new Map();
+			this.enchantEPCache[i] = new Map();
 		}
 	}
 
@@ -630,6 +667,8 @@ export class Player<SpecType extends Spec> {
 		if (newGear.equals(this.gear)) return;
 
 		this.gear = newGear;
+		// Item and enchant EP are relative to what is equipped (see cappedEPAdjustment), so they depend on gear.
+		this.clearEPCaches();
 		this.gearChangeEmitter.emit(eventID);
 	}
 
@@ -748,9 +787,12 @@ export class Player<SpecType extends Spec> {
 			}
 		}
 
+		// OctoWoW 1.17.2: weapon skill caps at 315, each point below the target's defense is a flat 0.2% miss
+		// and there is no hit suppression vs +3 level targets (mirrors NewAttackTable in sim/core/target.go).
+		weaponSkill = Math.min(weaponSkill, Mechanics.MAX_CHARACTER_LEVEL * 5 + 15);
 		const skillDiff = defenderDefense - weaponSkill;
 		// Due to warrior HS bug, hit cap for crit cap calculation ignores the 19% penalty
-		let meleeHitCap = skillDiff <= 10 ? 5.0 + skillDiff * 0.1 : 5.0 + skillDiff * 0.2 + (skillDiff - 10) * 0.2;
+		let meleeHitCap = skillDiff >= 0 ? 5.0 + skillDiff * 0.2 : 5.0 + skillDiff * 0.1;
 		meleeHitCap = this.getGear().isDualWielding() && (this.spec !== Spec.SpecWarrior || useDWPenalty) ? meleeHitCap + 19.0 : meleeHitCap + 0.0;
 
 		const dodgeCap = 5.0 + skillDiff * 0.1;
@@ -1088,42 +1130,26 @@ export class Player<SpecType extends Spec> {
 		return stats.computeEP(this.epWeights);
 	}
 
-	computeEnchantEP(enchant: Enchant): number {
-		if (this.enchantEPCache.has(enchant.effectId)) {
-			return this.enchantEPCache.get(enchant.effectId)!;
-		}
-
-		let ep = this.computeStatsEP(new Stats(enchant.stats));
-
-		if (enchant.stats[Stat.StatMeleeHaste] > 0) {
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatMeleeSpeedMultiplier) * enchant.stats[Stat.StatMeleeHaste];
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatRangedSpeedMultiplier) * enchant.stats[Stat.StatMeleeHaste];
-		}
-
-		if (enchant.stats[Stat.StatSpellHaste] > 0) {
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatCastSpeedMultiplier) * enchant.stats[Stat.StatSpellHaste];
-		}
-
-		this.enchantEPCache.set(enchant.effectId, ep);
-		return ep;
+	// Unit stats an enchant provides, as scored by EP.
+	private enchantEPStats(enchant: Enchant): Stats {
+		return Player.withHasteMultipliers(new Stats(enchant.stats), enchant.stats);
 	}
 
-	computeRandomSuffixEP(randomSuffix: ItemRandomSuffix): number {
-		if (this.randomSuffixEPCache.has(randomSuffix.id)) {
-			return this.randomSuffixEPCache.get(randomSuffix.id)!;
+	// Haste on items also counts towards the attack/cast speed multiplier pseudo stats.
+	private static withHasteMultipliers(unitStats: Stats, stats: Array<number>): Stats {
+		if (stats[Stat.StatMeleeHaste] > 0) {
+			unitStats = unitStats
+				.addPseudoStat(PseudoStat.PseudoStatMeleeSpeedMultiplier, stats[Stat.StatMeleeHaste])
+				.addPseudoStat(PseudoStat.PseudoStatRangedSpeedMultiplier, stats[Stat.StatMeleeHaste]);
 		}
-
-		const ep = this.computeStatsEP(new Stats(randomSuffix.stats));
-		this.randomSuffixEPCache.set(randomSuffix.id, ep);
-		return ep;
+		if (stats[Stat.StatSpellHaste] > 0) {
+			unitStats = unitStats.addPseudoStat(PseudoStat.PseudoStatCastSpeedMultiplier, stats[Stat.StatSpellHaste]);
+		}
+		return unitStats;
 	}
 
-	computeItemEP(item: Item, slot: ItemSlot): number {
-		if (item === null) return 0;
-
-		const cached = this.itemEPCache[slot].get(item.id);
-		if (cached !== undefined) return cached;
-
+	// Unit stats an item provides in the given slot, as scored by EP (random suffixes are scored separately).
+	private itemEPStats(item: Item, slot: ItemSlot): Stats {
 		let itemStats = new Stats(item.stats);
 		if (item.weaponSpeed > 0) {
 			const weaponDps = getWeaponDPS(item);
@@ -1138,6 +1164,71 @@ export class Player<SpecType extends Spec> {
 
 		// Add pseudo stats that should be included in item EP.
 		itemStats = itemStats.addPseudoStat(PseudoStat.BonusPhysicalDamage, item.bonusPhysicalDamage);
+
+		// Weapon skill, indexed by the WeaponSkill enum. Mirrors Character.applyWeaponSkills on the Go side.
+		item.weaponSkills.forEach((value, weaponSkill) => {
+			const pseudoStat = weaponSkillPseudoStats.get(weaponSkill);
+			if (value && pseudoStat !== undefined) {
+				itemStats = itemStats.addPseudoStat(pseudoStat, value);
+			}
+		});
+
+		return Player.withHasteMultipliers(itemStats, item.stats);
+	}
+
+	// Returns <= 0. Cap-aware correction to the linear EP of `candidate`, relative to `equipped` in the same slot:
+	// a positive per-stat delta of a capped stat (gain weight 0, EP weight non-zero) is worth nothing, so remove it.
+	// Equivalent to linearEP(equipped) + sum(delta * weight, or 0 for capped positive deltas). Exactly 0 when
+	// no gain weights are known or nothing is capped, so EP is then identical to the plain linear EP.
+	private cappedEPAdjustment(candidate: Stats, equipped: Stats | null): number {
+		let adjustment = 0;
+		for (const unitStat of this.cappedEPStats) {
+			const delta = candidate.getUnitStat(unitStat) - (equipped ? equipped.getUnitStat(unitStat) : 0);
+			if (delta > 0) {
+				adjustment -= delta * this.epWeights.getUnitStat(unitStat);
+			}
+		}
+		return adjustment;
+	}
+
+	// Stats treated as capped when scoring items: gain EP is 0 while the EP weight is not.
+	isEPStatCapped(stat: UnitStat): boolean {
+		return this.cappedEPStats.some(capped => capped.equals(stat));
+	}
+
+	// EP of an enchant in the given slot, relative to the enchant equipped there (see cappedEPAdjustment).
+	computeEnchantEP(enchant: Enchant, slot: ItemSlot): number {
+		const cached = this.enchantEPCache[slot].get(enchant.effectId);
+		if (cached !== undefined) return cached;
+
+		const enchantStats = this.enchantEPStats(enchant);
+		let ep = enchantStats.computeEP(this.epWeights);
+
+		const equippedEnchant = this.cappedEPStats.length ? this.gear.getEquippedItem(slot)?.enchant : null;
+		ep += this.cappedEPAdjustment(enchantStats, equippedEnchant ? this.enchantEPStats(equippedEnchant) : null);
+
+		this.enchantEPCache[slot].set(enchant.effectId, ep);
+		return ep;
+	}
+
+	computeRandomSuffixEP(randomSuffix: ItemRandomSuffix): number {
+		if (this.randomSuffixEPCache.has(randomSuffix.id)) {
+			return this.randomSuffixEPCache.get(randomSuffix.id)!;
+		}
+
+		const ep = this.computeStatsEP(new Stats(randomSuffix.stats));
+		this.randomSuffixEPCache.set(randomSuffix.id, ep);
+		return ep;
+	}
+
+	// EP of an item in the given slot, relative to the item equipped there (see cappedEPAdjustment).
+	computeItemEP(item: Item, slot: ItemSlot): number {
+		if (item === null) return 0;
+
+		const cached = this.itemEPCache[slot].get(item.id);
+		if (cached !== undefined) return cached;
+
+		const itemStats = this.itemEPStats(item, slot);
 
 		// For random suffix items, use the suffix option with the highest EP for the purposes of ranking items in the picker.
 		let maxSuffixEP = 0;
@@ -1154,14 +1245,8 @@ export class Player<SpecType extends Spec> {
 			ep -= 0.01;
 		}
 
-		if (item.stats[Stat.StatMeleeHaste] > 0) {
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatMeleeSpeedMultiplier) * item.stats[Stat.StatMeleeHaste];
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatRangedSpeedMultiplier) * item.stats[Stat.StatMeleeHaste];
-		}
-
-		if (item.stats[Stat.StatSpellHaste] > 0) {
-			ep += this.epWeights.getPseudoStat(PseudoStat.PseudoStatCastSpeedMultiplier) * item.stats[Stat.StatSpellHaste];
-		}
+		const equippedItem = this.cappedEPStats.length ? this.gear.getEquippedItem(slot)?.item : null;
+		ep += this.cappedEPAdjustment(itemStats, equippedItem ? this.itemEPStats(equippedItem, slot) : null);
 
 		this.itemEPCache[slot].set(item.id, ep);
 		return ep;

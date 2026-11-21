@@ -284,6 +284,21 @@ export const pseudoStatNames: Map<PseudoStat, string> = new Map([
 	[PseudoStat.BonusPhysicalDamage, 'Bonus Weapon Damage'],
 	[PseudoStat.PseudoStatRangedHit, 'Ranged Hit'],
 	[PseudoStat.PseudoStatRangedCrit, 'Ranged Crit'],
+	[PseudoStat.PseudoStatUnarmedSkill, 'Unarmed Skill'],
+	[PseudoStat.PseudoStatDaggersSkill, 'Daggers Skill'],
+	[PseudoStat.PseudoStatSwordsSkill, 'Swords Skill'],
+	[PseudoStat.PseudoStatMacesSkill, 'Maces Skill'],
+	[PseudoStat.PseudoStatAxesSkill, 'Axes Skill'],
+	[PseudoStat.PseudoStatTwoHandedSwordsSkill, 'Two-Handed Swords Skill'],
+	[PseudoStat.PseudoStatTwoHandedMacesSkill, 'Two-Handed Maces Skill'],
+	[PseudoStat.PseudoStatTwoHandedAxesSkill, 'Two-Handed Axes Skill'],
+	[PseudoStat.PseudoStatPolearmsSkill, 'Polearms Skill'],
+	[PseudoStat.PseudoStatStavesSkill, 'Staves Skill'],
+	[PseudoStat.PseudoStatBowsSkill, 'Bows Skill'],
+	[PseudoStat.PseudoStatCrossbowsSkill, 'Crossbows Skill'],
+	[PseudoStat.PseudoStatGunsSkill, 'Guns Skill'],
+	[PseudoStat.PseudoStatThrownSkill, 'Thrown Skill'],
+	[PseudoStat.PseudoStatFeralCombatSkill, 'Feral Combat Skill'],
 ]);
 
 export function getClassStatName(stat: Stat, _playerClass?: Class): string {

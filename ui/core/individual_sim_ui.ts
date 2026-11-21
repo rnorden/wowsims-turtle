@@ -487,6 +487,7 @@ export abstract class IndividualSimUI<SpecType extends Spec> extends SimUI {
 			IndividualSimSettings.mergePartial(proto, {
 				settings: this.sim.toProto(),
 				epWeightsStats: this.player.getEpWeights().toProto(),
+				epWeightsGainStats: this.player.getEpWeightsGain()?.toProto(),
 				epRatios: this.player.getEpRatios(),
 				dpsRefStat: this.dpsRefStat,
 				healRefStat: this.healRefStat,
@@ -531,7 +532,11 @@ export abstract class IndividualSimUI<SpecType extends Spec> extends SimUI {
 			}
 			if (loadCategory(SimSettingCategories.UISettings)) {
 				if (settings.epWeightsStats) {
-					this.player.setEpWeights(eventID, Stats.fromProto(settings.epWeightsStats));
+					this.player.setEpWeights(
+						eventID,
+						Stats.fromProto(settings.epWeightsStats),
+						settings.epWeightsGainStats ? Stats.fromProto(settings.epWeightsGainStats) : null,
+					);
 				} else {
 					this.player.setEpWeights(eventID, this.individualConfig.defaults.epWeights);
 				}

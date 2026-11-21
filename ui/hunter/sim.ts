@@ -42,6 +42,9 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 		PseudoStat.PseudoStatRangedDps,
 		PseudoStat.PseudoStatMeleeSpeedMultiplier,
 		PseudoStat.PseudoStatRangedSpeedMultiplier,
+		PseudoStat.PseudoStatBowsSkill,
+		PseudoStat.PseudoStatCrossbowsSkill,
+		PseudoStat.PseudoStatGunsSkill,
 	],
 	// Reference stat against which to calculate EP.
 	epReferenceStat: Stat.StatRangedAttackPower,

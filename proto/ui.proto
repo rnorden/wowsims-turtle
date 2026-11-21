@@ -357,6 +357,9 @@ message IndividualSimSettings {
 	Stat dps_ref_stat = 12;
 	Stat heal_ref_stat = 13;
 	Stat tank_ref_stat = 14;
+	// EP measured only by raising each stat, combined with the same EP ratios as ep_weights_stats.
+	// Used to detect capped stats when scoring items. Unset when the EP weights were entered manually.
+	optional UnitStats ep_weights_gain_stats = 15;
 }
 
 // Local storage data for gear settings.

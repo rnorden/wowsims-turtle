@@ -191,7 +191,7 @@ export default class SelectorModal extends BaseModal {
 						},
 					};
 				}),
-				computeEP: (enchant: UIEnchant) => this.player.computeEnchantEP(enchant),
+				computeEP: (enchant: UIEnchant) => this.player.computeEnchantEP(enchant, selectedSlot),
 				equippedToItemFn: (equippedItem: EquippedItem | null) => equippedItem?.enchant,
 				onRemove: (eventID: number) => {
 					const equippedItem = gearData.getEquippedItem();

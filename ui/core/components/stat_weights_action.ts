@@ -520,6 +520,20 @@ class EpWeightsMenu extends BaseModal {
 		updateButton.addEventListener('click', _event => {
 			const results = this.getPrevSimResult();
 			const epRatios = this.simUI.player.getEpRatios();
+			// Gain-only values, combined with the same ratios, so item scoring can tell which stats are capped.
+			const metrics: Array<[StatWeightValues | undefined, Stat, Stat]> = [
+				[results.dps, this.epReferenceStat, this.getDpsEpRefStat()],
+				[results.hps, this.epReferenceStat, this.getHealEpRefStat()],
+				[results.tps, this.epReferenceStat, this.getDpsEpRefStat()],
+				[results.dtps, Stat.StatArmor, this.getTankEpRefStat()],
+				[results.tmi, Stat.StatArmor, this.getTankEpRefStat()],
+				[results.pDeath, Stat.StatArmor, this.getTankEpRefStat()],
+			];
+			const newGain = metrics
+				.map(([values, simRefStat, uiRefStat], i) =>
+					values ? EpWeightsMenu.gainValues(values, simRefStat, this.statsType == 'ep' ? uiRefStat : null).scale(epRatios[i]) : new Stats(),
+				)
+				.reduce((total, gain) => total.add(gain), new Stats());
 			if (this.statsType == 'ep') {
 				const scaledDpsEp = Stats.fromProto(results.dps!.epValues).scale(epRatios[0]);
 				const scaledHpsEp = Stats.fromProto(results.hps!.epValues).scale(epRatios[1]);
@@ -528,7 +542,7 @@ class EpWeightsMenu extends BaseModal {
 				const scaledTmiEp = Stats.fromProto(results.tmi!.epValues).scale(epRatios[4]);
 				const scaledPDeathEp = Stats.fromProto(results.pDeath!.epValues).scale(epRatios[5]);
 				const newEp = scaledDpsEp.add(scaledHpsEp).add(scaledTpsEp).add(scaledDtpsEp).add(scaledTmiEp).add(scaledPDeathEp);
-				this.simUI.player.setEpWeights(TypedEvent.nextEventID(), newEp);
+				this.simUI.player.setEpWeights(TypedEvent.nextEventID(), newEp, newGain);
 			} else {
 				const scaledDpsWeights = Stats.fromProto(results.dps!.weights).scale(epRatios[0]);
 				const scaledHpsWeights = Stats.fromProto(results.hps!.weights).scale(epRatios[1]);
@@ -542,7 +556,7 @@ class EpWeightsMenu extends BaseModal {
 					.add(scaledDtpsWeights)
 					.add(scaledTmiWeights)
 					.add(scaledPDeathWeights);
-				this.simUI.player.setEpWeights(TypedEvent.nextEventID(), newWeights);
+				this.simUI.player.setEpWeights(TypedEvent.nextEventID(), newWeights, newGain);
 			}
 			this.updateTable();
 		});
@@ -599,9 +613,16 @@ class EpWeightsMenu extends BaseModal {
 			getValue: (_player: Player<any>) => this.simUI.player.getEpWeights().getUnitStat(stat),
 			setValue: (eventID: EventID, player: Player<any>, newValue: number) => {
 				const epWeights = player.getEpWeights().withUnitStat(stat, newValue);
-				player.setEpWeights(eventID, epWeights);
+				// Manually edited weights are scored purely linearly: drop the gain values.
+				player.setEpWeights(eventID, epWeights, null);
 			},
 		});
+		if (this.simUI.player.isEPStatCapped(stat)) {
+			currentEpCell.insertAdjacentHTML(
+				'beforeend',
+				EpWeightsMenu.cappedMarker('Item scoring treats this stat as capped: more of it than the equipped item gives is worth 0 EP.'),
+			);
+		}
 
 		return row;
 	}
@@ -616,6 +637,17 @@ class EpWeightsMenu extends BaseModal {
 			const epAvg = stat.getProtoValue(statWeights.epValues!);
 			const epStdev = stat.getProtoValue(statWeights.epValuesStdev!);
 			epCell = this.makeTableCellContents(epAvg, epStdev);
+			// Capped: raising the stat changed nothing, while lowering it did.
+			if (
+				statWeights.epValuesGain &&
+				statWeights.epValuesLoss &&
+				stat.getProtoValue(statWeights.epValuesGain) === 0 &&
+				stat.getProtoValue(statWeights.epValuesLoss) !== 0
+			) {
+				epCell += EpWeightsMenu.cappedMarker(
+					`Capped: raising this stat gains nothing. Losing it is worth ${stat.getProtoValue(statWeights.epValuesLoss).toFixed(2)} EP (shown value).`,
+				);
+			}
 		} else {
 			weightCell = `<span class="results-avg notapplicable">N/A</span>`;
 			epCell = weightCell;
@@ -688,6 +720,26 @@ class EpWeightsMenu extends BaseModal {
 		return result;
 	}
 
+	private static cappedMarker(tooltip: string): string {
+		return `<i class="fas fa-lock fa-xs ms-1 ep-capped-marker" title="${tooltip}"></i>`;
+	}
+
+	// Gain-only (raise the stat) values for one metric, as weights when refStat is null, else as EP normalised by
+	// refStat like epValues. The sim normalises ep_values_gain by simRefStat, and calculateEp leaves it untouched,
+	// so weights.gain = ep_values_gain * weights[simRefStat]. Metrics without usable gain values (p(death), older
+	// results, a zero sim reference weight) fall back to their two-sided values, i.e. they never mark a stat capped.
+	private static gainValues(values: StatWeightValues, simRefStat: Stat, refStat: Stat | null): Stats {
+		const simRefWeight = values.weights ? values.weights.stats[simRefStat] : 0;
+		const hasGain = values.epValuesGain && values.epValuesGain.stats.some(v => v !== 0);
+		if (!hasGain || simRefWeight === 0) {
+			return Stats.fromProto(refStat === null ? values.weights : values.epValues);
+		}
+		const gainWeights = Stats.fromProto(values.epValuesGain).scale(simRefWeight);
+		if (refStat === null) return gainWeights;
+		const refWeight = values.weights!.stats[refStat];
+		return refWeight === 0 ? new Stats() : gainWeights.scale(1 / refWeight);
+	}
+
 	private getDpsEpRefStat(): Stat {
 		return this.simUI.dpsRefStat !== undefined ? this.simUI.dpsRefStat : this.epReferenceStat;
 	}
@@ -756,6 +808,21 @@ class EpWeightsMenu extends BaseModal {
 				PseudoStat.PseudoStatMeleeSpeedMultiplier,
 				PseudoStat.PseudoStatRangedSpeedMultiplier,
 				PseudoStat.PseudoStatCastSpeedMultiplier,
+				PseudoStat.PseudoStatUnarmedSkill,
+				PseudoStat.PseudoStatDaggersSkill,
+				PseudoStat.PseudoStatSwordsSkill,
+				PseudoStat.PseudoStatMacesSkill,
+				PseudoStat.PseudoStatAxesSkill,
+				PseudoStat.PseudoStatTwoHandedSwordsSkill,
+				PseudoStat.PseudoStatTwoHandedMacesSkill,
+				PseudoStat.PseudoStatTwoHandedAxesSkill,
+				PseudoStat.PseudoStatPolearmsSkill,
+				PseudoStat.PseudoStatStavesSkill,
+				PseudoStat.PseudoStatBowsSkill,
+				PseudoStat.PseudoStatCrossbowsSkill,
+				PseudoStat.PseudoStatGunsSkill,
+				PseudoStat.PseudoStatThrownSkill,
+				PseudoStat.PseudoStatFeralCombatSkill,
 			].includes(stat.getPseudoStat());
 		}
 	});
