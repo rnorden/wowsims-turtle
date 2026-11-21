@@ -53,7 +53,7 @@ stat_weights_results: {
  key: "TestMMHunter-Phase1-StatWeights-Default"
  value: {
   weights: 0
-  weights: 0.4953
+  weights: 0.60591
   weights: 0
   weights: 0
   weights: 0
@@ -70,8 +70,8 @@ stat_weights_results: {
   weights: 0
   weights: 0
   weights: 0
-  weights: 5.48611
-  weights: 5.63975
+  weights: 6.22363
+  weights: 6.19636
   weights: 0
   weights: 0
   weights: 0
@@ -79,7 +79,7 @@ stat_weights_results: {
   weights: 0
   weights: 0
   weights: 0
-  weights: 0.19484
+  weights: 0.22033
   weights: 0
   weights: 0
   weights: 0
@@ -103,168 +103,168 @@ stat_weights_results: {
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-BloodGuard'sChainVices-22862"
  value: {
-  dps: 659.64564
-  tps: 515.54279
+  dps: 713.51801
+  tps: 563.52681
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Champion'sPursuance"
  value: {
-  dps: 658.01152
-  tps: 509.73005
+  dps: 708.25523
+  tps: 556.69113
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-CryptstalkerArmor"
  value: {
-  dps: 907.31095
-  tps: 744.61841
+  dps: 969.35432
+  tps: 806.1128
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-DragonstalkerArmor"
  value: {
-  dps: 717.93004
-  tps: 570.70116
+  dps: 777.73533
+  tps: 626.03401
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-FieldMarshal'sPursuit"
  value: {
-  dps: 692.83205
-  tps: 548.10345
+  dps: 754.70284
+  tps: 601.76729
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-General'sChainGloves-16571"
  value: {
-  dps: 663.6438
-  tps: 520.36981
+  dps: 721.60574
+  tps: 573.00027
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-GiantstalkerArmor"
  value: {
-  dps: 688.1937
-  tps: 542.04588
+  dps: 746.67633
+  tps: 595.90215
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Knight-Lieutenant'sChainVices-23279"
  value: {
-  dps: 659.64564
-  tps: 515.54279
+  dps: 713.51801
+  tps: 563.52681
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-LieutenantCommander'sPursuance"
  value: {
-  dps: 658.01152
-  tps: 509.73005
+  dps: 708.25523
+  tps: 556.69113
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Marshal'sChainGrips-16463"
  value: {
-  dps: 663.6438
-  tps: 520.36981
+  dps: 721.60574
+  tps: 573.00027
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Predator'sArmor"
  value: {
-  dps: 697.84514
-  tps: 553.92513
+  dps: 758.31322
+  tps: 607.8913
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Renataki'sCharmofBeasts-19953"
  value: {
-  dps: 663.69407
-  tps: 518.80857
+  dps: 715.91324
+  tps: 572.18255
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Striker'sGarb"
  value: {
-  dps: 700.44403
-  tps: 555.2088
+  dps: 747.00818
+  tps: 599.15393
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-TheDefiler'sDetermination"
  value: {
-  dps: 677.82363
-  tps: 531.41637
+  dps: 732.18938
+  tps: 580.28084
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-TheHighlander'sDetermination"
  value: {
-  dps: 677.82363
-  tps: 531.41637
+  dps: 732.18938
+  tps: 580.28084
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-AllItems-Warlord'sPursuit"
  value: {
-  dps: 692.83205
-  tps: 548.10345
+  dps: 754.70284
+  tps: 601.76729
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Average-Default"
  value: {
-  dps: 666.65506
-  tps: 522.56271
+  dps: 721.02521
+  tps: 573.68879
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 743.79115
-  tps: 837.68326
+  dps: 794.40912
+  tps: 905.08322
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 671.80535
-  tps: 526.76493
+  dps: 724.50222
+  tps: 577.04944
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-FullBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 801.07084
-  tps: 649.31703
+  dps: 853.21761
+  tps: 696.67884
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 330.16889
-  tps: 318.59206
+  dps: 343.85318
+  tps: 330.90999
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 303.69644
-  tps: 245.12897
+  dps: 317.5148
+  tps: 257.68658
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-Settings-Orc-p0.bis-Hunter-p1-NoBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 446.14316
-  tps: 381.28526
+  dps: 459.11612
+  tps: 392.85287
  }
 }
 dps_results: {
  key: "TestMMHunter-Phase1-SwitchInFrontOfTarget-Default"
  value: {
-  dps: 669.29454
-  tps: 524.82879
+  dps: 724.26287
+  tps: 575.64839
  }
 }

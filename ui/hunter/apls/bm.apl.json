@@ -12,9 +12,9 @@
     {"action":{"castSpell":{"spellId":{"spellId":3045}}}},
     {"action":{"castSpell":{"spellId":{"spellId":41827}}}},
     {"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpLt","lhs":{"dotRemainingTime":{"spellId":{"spellId":25295,"rank":9}}},"rhs":{"const":{"val":"1.5s"}}}},{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}}]}},"castSpell":{"spellId":{"spellId":25295,"rank":9}}}},
-    {"action":{"condition":{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},"castSpell":{"spellId":{"spellId":20904,"rank":6}}}},
-    {"action":{"condition":{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},"castSpell":{"spellId":{"spellId":25294,"rank":5}}}},
+    {"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},{"cmp":{"op":"OpGe","lhs":{"autoTimeToNext":{"autoType":"Ranged"}},"rhs":{"min":{"vals":[{"spellCastTime":{"spellId":{"spellId":20904,"rank":6}}},{"math":{"op":"OpSub","lhs":{"autoSwingTime":{"autoType":"Ranged"}},"rhs":{"const":{"val":"0.1s"}}}}]}}}}]}},"castSpell":{"spellId":{"spellId":20904,"rank":6}}}},
+    {"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},{"cmp":{"op":"OpGe","lhs":{"autoTimeToNext":{"autoType":"Ranged"}},"rhs":{"math":{"op":"OpSub","lhs":{"spellCastTime":{"spellId":{"spellId":25294,"rank":5}}},"rhs":{"const":{"val":"0.3s"}}}}}}]}},"castSpell":{"spellId":{"spellId":25294,"rank":5}}}},
     {"action":{"condition":{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},"castSpell":{"spellId":{"spellId":14287,"rank":8}}}},
-    {"action":{"castSpell":{"spellId":{"spellId":45974,"rank":8}}}}
+    {"action":{"condition":{"cmp":{"op":"OpGe","lhs":{"autoTimeToNext":{"autoType":"Ranged"}},"rhs":{"math":{"op":"OpSub","lhs":{"spellCastTime":{"spellId":{"spellId":45974,"rank":8}}},"rhs":{"const":{"val":"0.1s"}}}}}},"castSpell":{"spellId":{"spellId":45974,"rank":8}}}}
   ]
 }
