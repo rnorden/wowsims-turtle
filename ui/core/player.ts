@@ -23,6 +23,7 @@ import {
 	IndividualBuffs,
 	ItemRandomSuffix,
 	ItemSlot,
+	MobType,
 	Profession,
 	PseudoStat,
 	Race,
@@ -77,6 +78,10 @@ import { ItemTooltipContext } from './tooltip_context.js';
 import { EventID, TypedEvent } from './typed_event.js';
 import { stringComparator } from './utils.js';
 import { WorkerProgressCallback } from './worker_pool';
+
+// Extra EP for an item effect that item stats don't capture. A plain number always applies; the object form applies only
+// while the encounter's primary target is one of mobTypes (e.g. "+X Attack Power vs Undead and Demons" effects).
+export type ItemEPBonus = number | { ep: number; mobTypes: Array<MobType> };
 
 export interface AuraStats {
 	data: AuraStatsProto;
@@ -294,6 +299,11 @@ export class Player<SpecType extends Spec> {
 	private epWeightsGain: Stats | null = null;
 	// Stats considered capped, derived from epWeights / epWeightsGain.
 	private cappedEPStats: Array<UnitStat> = [];
+	// Extra EP per item id for effects the item's stats don't capture (on-use / proc effects), in the same units as
+	// epWeights. Added to the item's stat EP in computeItemEP.
+	private itemEPBonuses: Map<number, ItemEPBonus> = new Map();
+	// Primary target mob type the EP caches were computed against (conditional itemEPBonuses depend on it).
+	private epCacheMobType: MobType | undefined = undefined;
 	private currentStats: PlayerStats = PlayerStats.create();
 	private metadata: UnitMetadata = new UnitMetadata();
 	private petMetadatas: UnitMetadataList = new UnitMetadataList();
@@ -471,7 +481,27 @@ export class Player<SpecType extends Spec> {
 		this.epWeightsChangeEmitter.emit(eventID);
 	}
 
+	// Constant per spec (see IndividualSimUIConfig.defaults.itemEPBonuses), so no change event is emitted.
+	setItemEPBonuses(bonuses: Record<number, ItemEPBonus>) {
+		this.itemEPBonuses = new Map(Object.entries(bonuses).map(([id, bonus]) => [Number(id), bonus]));
+		this.clearEPCaches();
+	}
+
+	// Undefined until the encounter has initialized its targets.
+	private getPrimaryTargetMobType(): MobType | undefined {
+		return this.sim.encounter?.targets?.[0]?.mobType;
+	}
+
+	private getItemEPBonus(itemId: number): number {
+		const bonus = this.itemEPBonuses.get(itemId);
+		if (bonus === undefined) return 0;
+		if (typeof bonus === 'number') return bonus;
+		const mobType = this.getPrimaryTargetMobType();
+		return mobType !== undefined && bonus.mobTypes.includes(mobType) ? bonus.ep : 0;
+	}
+
 	private clearEPCaches() {
+		this.epCacheMobType = this.getPrimaryTargetMobType();
 		this.randomSuffixEPCache = new Map();
 		for (let i = 0; i < ItemSlot.ItemSlotRanged + 1; ++i) {
 			this.itemEPCache[i] = new Map();
@@ -1225,6 +1255,11 @@ export class Player<SpecType extends Spec> {
 	computeItemEP(item: Item, slot: ItemSlot): number {
 		if (item === null) return 0;
 
+		// Conditional itemEPBonuses depend on the primary target's mob type. Checked here rather than on
+		// encounter.targetsChangeEmitter because the encounter sets its initial targets without emitting, and that emitter
+		// also fires for unrelated target edits (level, armor, ...).
+		if (this.getPrimaryTargetMobType() !== this.epCacheMobType) this.clearEPCaches();
+
 		const cached = this.itemEPCache[slot].get(item.id);
 		if (cached !== undefined) return cached;
 
@@ -1238,7 +1273,7 @@ export class Player<SpecType extends Spec> {
 			maxSuffixEP = Math.max(...suffixEPs);
 		}
 
-		let ep = itemStats.computeEP(this.epWeights) + maxSuffixEP;
+		let ep = itemStats.computeEP(this.epWeights) + maxSuffixEP + this.getItemEPBonus(item.id);
 
 		// unique items are slightly worse than non-unique because you can have only one.
 		if (item.unique) {

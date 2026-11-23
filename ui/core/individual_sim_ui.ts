@@ -20,7 +20,7 @@ import { GLOBAL_DISPLAY_PSEUDO_STATS, GLOBAL_DISPLAY_STATS, GLOBAL_EP_STATS } fr
 import { SimSettingCategories } from './constants/sim_settings';
 import * as Tooltips from './constants/tooltips';
 import { simLaunchStatuses } from './launched_sims';
-import { Player, PlayerConfig, registerSpecConfig as registerPlayerConfig } from './player';
+import { ItemEPBonus, Player, PlayerConfig, registerSpecConfig as registerPlayerConfig } from './player';
 import { PresetBuild, PresetGear, PresetRotation } from './preset_utils';
 import { StatWeightsResult } from './proto/api';
 import { APLRotation, APLRotation_Type as APLRotationType } from './proto/apl';
@@ -105,6 +105,9 @@ export interface IndividualSimUIConfig<SpecType extends Spec> extends PlayerConf
 		race?: Race;
 		gear: EquipmentSpec;
 		epWeights: Stats;
+		// Extra EP per item id for effects that item stats don't capture (on-use / proc effects), added to the item's stat EP
+		// in the gear picker. In the same units as epWeights. See ItemEPBonus for target-mob-type-conditional bonuses.
+		itemEPBonuses?: Record<number, ItemEPBonus>;
 		consumes: Consumes;
 
 		rotationType?: APLRotationType;
@@ -192,6 +195,7 @@ export abstract class IndividualSimUI<SpecType extends Spec> extends SimUI {
 		this.rootElem.classList.add('individual-sim-ui');
 		this.player = player;
 		this.individualConfig = config;
+		this.player.setItemEPBonuses(config.defaults.itemEPBonuses ?? {});
 		this.raidSimResultsManager = null;
 		this.prevEpIterations = 0;
 		this.prevEpSimResult = null;

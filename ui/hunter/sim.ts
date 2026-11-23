@@ -4,7 +4,7 @@ import * as OtherInputs from '../core/components/other_inputs.js';
 import { Phase } from '../core/constants/other.js';
 import { IndividualSimUI, registerSpecConfig } from '../core/individual_sim_ui.js';
 import { Player } from '../core/player.js';
-import { PartyBuffs, PseudoStat, Spec, Stat } from '../core/proto/common.js';
+import { MobType, PartyBuffs, PseudoStat, Spec, Stat } from '../core/proto/common.js';
 import { Stats } from '../core/proto_utils/stats.js';
 import * as HunterInputs from './inputs.js';
 import * as Presets from './presets.js';
@@ -112,6 +112,30 @@ const SPEC_CONFIG = registerSpecConfig(Spec.SpecHunter, {
 				[PseudoStat.PseudoStatGunsSkill]: 5.03,
 			},
 		),
+		// EP for trinket effects that item stats don't capture (on-use / proc effects), added on top of the trinket's stat EP.
+		// Measured 2026-11-23 with the same UI-default settings as epWeights, 120 s fight: paired-seed DPS change vs an empty
+		// trinket slot (other trinket slot empty), 20k iterations, averaged over ranged speed -1/-0.5/0/+0.5/+1% (timing cliffs)
+		// and over the BM Pre-BiS and current-eadi sets, converted at the measured ~0.39 DPS per RAP, minus the item's stat EP.
+		// On-use values depend on fight length (two uses fit a 180 s fight, one a 60 s fight, so they are worth more per second
+		// in both than at 120 s); rerun stat weights for other fight lengths. Only effects implemented in the sim are listed.
+		// Entries with mobTypes only apply while the encounter's primary target is one of those mob types.
+		itemEPBonuses: {
+			// Mark of the Champion: +150 AP vs Undead and Demons only (measured vs the default Demon target).
+			23206: { ep: 110, mobTypes: [MobType.MobTypeUndead, MobType.MobTypeDemon] },
+			23570: 65, // Jom Gabbar
+			21180: 52, // Earthstrike
+			23041: 49, // Slayer's Crest (on top of its 64 RAP)
+			19991: 32, // Devilsaur Eye (its +2% hit is worth nothing at the hit cap)
+			22954: 19, // Kiss of the Spider (on top of its 1% hit / 1% crit)
+			20512: 14, // Sanctified Orb: +5% crit, but its use triggers the GCD
+			55087: 13, // Jewel of Wild Magics
+			19949: 9, // Zandalarian Hero Medallion
+			13213: 5, // Smolderweb's Eye
+			21670: 7, // Badge of the Swarmguard: only worth anything while the target has armor left after debuffs (measured vs the
+			// default 3731-armor boss; ~0 vs a 1104-armor target).
+			19953: 1, // Renataki's Charm of Beasts
+			19992: -24, // Devilsaur Tooth: its use triggers the GCD (spell 24353, category 133) and the crit usually lands on a weak pet auto attack, so it loses DPS.
+		},
 		// Default consumes settings.
 		consumes: Presets.DefaultConsumes,
 		// Default talents.
