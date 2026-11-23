@@ -370,16 +370,29 @@ func (value *APLValueCompare) String() string {
 
 type APLValueMath struct {
 	DefaultAPLValueImpl
-	op  proto.APLValueMath_MathOperator
-	lhs APLValue
-	rhs APLValue
+	op         proto.APLValueMath_MathOperator
+	lhs        APLValue
+	rhs        APLValue
+	resultType proto.APLValueType
 }
 
+func isAPLNumberType(t proto.APLValueType) bool {
+	return t == proto.APLValueType_ValueTypeInt || t == proto.APLValueType_ValueTypeFloat
+}
+
+// Typing rules for math operations:
+//   - Add/Sub: both operands are coerced to the higher-order type, which is also the result type.
+//   - Mul/Div between two numbers: both are coerced to the higher-order type (int op int stays int,
+//     with integer division; any float makes the result float).
+//   - Duration * number, number * duration, duration / number: the number is used as a float scalar
+//     and the result is a duration (e.g. autoSwingTime * 0.1 is 10% of the swing time).
+//   - Duration / duration: a float ratio (e.g. 3s / 2s = 1.5).
+//   - Number / duration: a float, with the duration expressed in seconds (e.g. 1 / 2s = 0.5).
+//   - Duration * duration: kept as the legacy duration product (left * right in nanoseconds).
 func (rot *APLRotation) newValueMath(config *proto.APLValueMath) APLValue {
-	lhs, rhs := rot.newAPLValue(config.Lhs), rot.newAPLValue(config.Rhs)
-	if config.Op == proto.APLValueMath_OpAdd || config.Op == proto.APLValueMath_OpSub {
-		lhs, rhs = rot.coerceToSameType(lhs, rhs)
-	}
+	return rot.newValueMathFromValues(config.Op, rot.newAPLValue(config.Lhs), rot.newAPLValue(config.Rhs))
+}
+func (rot *APLRotation) newValueMathFromValues(op proto.APLValueMath_MathOperator, lhs APLValue, rhs APLValue) APLValue {
 	if lhs == nil || rhs == nil {
 		return nil
 	}
@@ -394,17 +407,49 @@ func (rot *APLRotation) newValueMath(config *proto.APLValueMath) APLValue {
 		return nil
 	}
 
+	lhsIsDur := lhs.Type() == proto.APLValueType_ValueTypeDuration
+	rhsIsDur := rhs.Type() == proto.APLValueType_ValueTypeDuration
+	var resultType proto.APLValueType
+
+	switch {
+	case op == proto.APLValueMath_OpAdd || op == proto.APLValueMath_OpSub:
+		lhs, rhs = rot.coerceToSameType(lhs, rhs)
+		resultType = lhs.Type()
+	case !lhsIsDur && !rhsIsDur:
+		lhs, rhs = rot.coerceToSameType(lhs, rhs)
+		resultType = lhs.Type()
+	case lhsIsDur && rhsIsDur:
+		if op == proto.APLValueMath_OpDiv {
+			resultType = proto.APLValueType_ValueTypeFloat
+		} else {
+			resultType = proto.APLValueType_ValueTypeDuration
+		}
+	case lhsIsDur:
+		// duration * number, duration / number
+		rhs = rot.coerceTo(rhs, proto.APLValueType_ValueTypeFloat)
+		resultType = proto.APLValueType_ValueTypeDuration
+	default:
+		// number * duration, number / duration
+		lhs = rot.coerceTo(lhs, proto.APLValueType_ValueTypeFloat)
+		if op == proto.APLValueMath_OpMul {
+			resultType = proto.APLValueType_ValueTypeDuration
+		} else {
+			resultType = proto.APLValueType_ValueTypeFloat
+		}
+	}
+
 	return &APLValueMath{
-		op:  config.Op,
-		lhs: lhs,
-		rhs: rhs,
+		op:         op,
+		lhs:        lhs,
+		rhs:        rhs,
+		resultType: resultType,
 	}
 }
 func (value *APLValueMath) GetInnerValues() []APLValue {
 	return []APLValue{value.lhs, value.rhs}
 }
 func (value *APLValueMath) Type() proto.APLValueType {
-	return value.lhs.Type()
+	return value.resultType
 }
 func (value *APLValueMath) GetInt(sim *Simulation) int32 {
 	switch value.op {
@@ -419,51 +464,50 @@ func (value *APLValueMath) GetInt(sim *Simulation) int32 {
 	}
 	return 0
 }
+
+// Returns the operand as a float, expressing durations in seconds.
+func aplMathOperandFloat(sim *Simulation, operand APLValue) float64 {
+	if operand.Type() == proto.APLValueType_ValueTypeDuration {
+		return operand.GetDuration(sim).Seconds()
+	}
+	return operand.GetFloat(sim)
+}
+
 func (value *APLValueMath) GetFloat(sim *Simulation) float64 {
+	// Mixed duration operands (duration / duration, number / duration) are evaluated with durations in seconds.
+	lhs := aplMathOperandFloat(sim, value.lhs)
+	rhs := aplMathOperandFloat(sim, value.rhs)
 	switch value.op {
 	case proto.APLValueMath_OpAdd:
-		return value.lhs.GetFloat(sim) + value.rhs.GetFloat(sim)
+		return lhs + rhs
 	case proto.APLValueMath_OpSub:
-		return value.lhs.GetFloat(sim) - value.rhs.GetFloat(sim)
+		return lhs - rhs
 	case proto.APLValueMath_OpMul:
-		return value.lhs.GetFloat(sim) * value.rhs.GetFloat(sim)
+		return lhs * rhs
 	case proto.APLValueMath_OpDiv:
-		return value.lhs.GetFloat(sim) / value.rhs.GetFloat(sim)
+		return lhs / rhs
 	}
 	return 0
 }
 func (value *APLValueMath) GetDuration(sim *Simulation) time.Duration {
+	lhsIsDur := value.lhs.Type() == proto.APLValueType_ValueTypeDuration
+	rhsIsDur := value.rhs.Type() == proto.APLValueType_ValueTypeDuration
+
 	switch value.op {
 	case proto.APLValueMath_OpAdd:
 		return value.lhs.GetDuration(sim) + value.rhs.GetDuration(sim)
 	case proto.APLValueMath_OpSub:
 		return value.lhs.GetDuration(sim) - value.rhs.GetDuration(sim)
 	case proto.APLValueMath_OpMul:
-		left := value.lhs.GetDuration(sim)
-		right := value.rhs.GetDuration(sim)
-
-		switch value.lhs.Type() {
-		case proto.APLValueType_ValueTypeInt:
-			left = time.Duration(value.lhs.GetInt(sim))
-		case proto.APLValueType_ValueTypeFloat:
-			left = time.Duration(value.lhs.GetFloat(sim))
+		if lhsIsDur && rhsIsDur {
+			return value.lhs.GetDuration(sim) * value.rhs.GetDuration(sim)
+		} else if lhsIsDur {
+			return time.Duration(float64(value.lhs.GetDuration(sim)) * value.rhs.GetFloat(sim))
+		} else {
+			return time.Duration(value.lhs.GetFloat(sim) * float64(value.rhs.GetDuration(sim)))
 		}
-
-		switch value.rhs.Type() {
-		case proto.APLValueType_ValueTypeInt:
-			right = time.Duration(value.rhs.GetInt(sim))
-		case proto.APLValueType_ValueTypeFloat:
-			right = time.Duration(value.rhs.GetFloat(sim))
-		}
-		return left * right
 	case proto.APLValueMath_OpDiv:
-		divider := value.rhs.GetDuration(sim)
-		if value.rhs.Type() == proto.APLValueType_ValueTypeFloat {
-			divider = time.Duration(value.rhs.GetFloat(sim))
-		} else if value.rhs.Type() == proto.APLValueType_ValueTypeInt {
-			divider = time.Duration(value.rhs.GetInt(sim))
-		}
-		return value.lhs.GetDuration(sim) / divider
+		return time.Duration(float64(value.lhs.GetDuration(sim)) / value.rhs.GetFloat(sim))
 	}
 	return 0
 }
