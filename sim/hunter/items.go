@@ -175,31 +175,25 @@ func init() {
 			Duration: core.NeverExpires,
 		})
 
+		// Spell 24353 (client Spell.dbc and Turtle 1.17.1 spell_template agree): applies SPELL_AURA_MOD_CRIT_PERCENT +100 to the pet,
+		// no duration, 1 charge consumed by procFlags 20 = successful melee auto attack (0x4) or melee special (0x10). So the pet's
+		// next landed melee attack, white or special, crits. Its magic abilities are not affected and do not consume it.
+		const critBonus = 100 * core.CritRatingPerCritChance
 		aura := hunter.pet.GetOrRegisterAura(core.Aura{
 			Label:    "Primal Instinct",
 			ActionID: core.ActionID{SpellID: 24353},
 			Duration: core.NeverExpires,
 
 			OnGain: func(aura *core.Aura, sim *core.Simulation) {
-				if hunter.pet.focusDump != nil {
-					hunter.pet.focusDump.BonusCritRating += 100
-				}
-				if hunter.pet.specialAbility != nil {
-					hunter.pet.specialAbility.BonusCritRating += 100
-				}
+				aura.Unit.AddStatDynamic(sim, stats.MeleeCrit, critBonus)
 				trackingAura.Activate(sim)
 			},
 			OnExpire: func(aura *core.Aura, sim *core.Simulation) {
-				if hunter.pet.focusDump != nil {
-					hunter.pet.focusDump.BonusCritRating -= 100
-				}
-				if hunter.pet.specialAbility != nil {
-					hunter.pet.specialAbility.BonusCritRating -= 100
-				}
+				aura.Unit.AddStatDynamic(sim, stats.MeleeCrit, -critBonus)
 				trackingAura.Deactivate(sim)
 			},
 			OnSpellHitDealt: func(aura *core.Aura, sim *core.Simulation, spell *core.Spell, result *core.SpellResult) {
-				if spell == hunter.pet.focusDump || spell == hunter.pet.specialAbility {
+				if spell.ProcMask.Matches(core.ProcMaskMelee) && result.Landed() {
 					aura.Deactivate(sim)
 				}
 			},
@@ -210,12 +204,20 @@ func init() {
 			Flags:    core.SpellFlagNoOnCastComplete | core.SpellFlagOffensiveEquipment,
 
 			Cast: core.CastConfig{
+				// Unlike most on-use trinkets, spell 24353 has StartRecoveryCategory 133 / StartRecoveryTime 1500 (the normal
+				// player GCD category) in both the client DBC and the 1.17.1 server data, and the server applies it to item casts
+				// (Player::CastItemUseSpell -> non-triggered Spell::prepare -> TriggerGlobalCooldown). So it does cost a GCD.
 				DefaultCast: core.Cast{
 					GCD: core.GCDDefault,
 				},
 				CD: core.Cooldown{
 					Timer:    hunter.NewTimer(),
 					Duration: time.Minute * 2,
+				},
+				// Item category 1141 (shared on-use trinket category), category cooldown 10 s.
+				SharedCD: core.Cooldown{
+					Timer:    hunter.GetOffensiveTrinketCD(),
+					Duration: time.Second * 10,
 				},
 			},
 			ExtraCastCondition: func(sim *core.Simulation, target *core.Unit) bool {
