@@ -61,17 +61,26 @@ func (hunter *Hunter) NewHunterPet() *HunterPet {
 		attackSpeed = 2.5
 	}
 
-	baseMinDamage = 18.17 * attackSpeed
-	baseMaxDamage = 27.66 * attackSpeed
+	// Base weapon damage per second of swing time, calibrated against an in-game level 60 Raptor
+	// (1.5 speed, 557 AP, Unleashed Fury 5/5). Its sheet showed 122-154 when happy and 97-124 when
+	// content, so the sheet includes happiness (x1.25). Removing AP (557/14*1.5) and the x1.32 Unleashed
+	// Fury * Raptor modifiers leaves ~14-34 per swing at 1.5 speed. This assumes the client's Raptor
+	// +10% family passive (17217) applies on Turtle.
+	baseMinDamage = 9.35 * attackSpeed
+	baseMaxDamage = 22.65 * attackSpeed
 
+	// Level 60 base stats, from the same in-game pet. Str/Agi/Int/Spi matched vanilla; Stamina is what
+	// remained after Endurance Training's 30% of hunter Stamina; base AP showed 260 (= 2*Str - 12) and armor
+	// 4128 (= (3808 + 2 per Agility) * the Raptor's 1.03).
 	hunterPetBaseStats = stats.Stats{
 		stats.Strength:  136,
 		stats.Agility:   100,
-		stats.Stamina:   274,
+		stats.Stamina:   256,
 		stats.Intellect: 50,
 		stats.Spirit:    80,
+		stats.Armor:     3808,
 
-		stats.AttackPower: -20,
+		stats.AttackPower: -12,
 	}
 
 	hp := &HunterPet{
@@ -192,10 +201,14 @@ func (hunter *Hunter) makeStatInheritance() core.PetStatInheritance {
 	apScale := []float64{0, 0.12, 0.25}[hunter.Talents.SpiritBond]
 	spScale := []float64{0, 0.07, 0.15}[hunter.Talents.SpiritBond]
 
+	// Endurance Training: the pet gains 6% per rank of the hunter's Stamina (client spell 19587).
+	staScale := 0.06 * float64(hunter.Talents.EnduranceTraining)
+
 	return func(ownerStats stats.Stats) stats.Stats {
 		return stats.Stats{
 			stats.AttackPower: ownerStats[stats.RangedAttackPower] * apScale,
 			stats.SpellPower:  ownerStats[stats.RangedAttackPower] * spScale,
+			stats.Stamina:     ownerStats[stats.Stamina] * staScale,
 		}
 	}
 }
@@ -215,6 +228,8 @@ type PetConfig struct {
 	CustomRotation func(*core.Simulation, *HunterPet, func(*core.Spell) bool)
 }
 
+// Family Health/Armor/Damage modifiers match the client "Tamed Pet Passive (DND)" spells (e.g. 17217 Raptor:
+// +10% damage, +3% armor, -5% health; 46242 Serpent).
 // Abilities reference: https://wotlk.wowhead.com/hunter-pets
 // https://wotlk.wowhead.com/guides/hunter-dps-best-pets-taming-loyalty-burning-crusade-classic
 var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
@@ -432,7 +447,7 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Armor:  1.05,
 		Damage: 1.00,
 	},
-	// Turtle family (1.17.2). Learns Poison Spit and Bite.
+	// Turtle family (1.17.2). Learns Poison Spit and Bite; family stat modifiers are unknown.
 	proto.Hunter_Options_Serpent: {
 		Name:    "Serpent",
 		MobType: proto.MobType_MobTypeBeast,
@@ -440,9 +455,9 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		SpecialAbility: PoisonSpit,
 		FocusDump:      Bite,
 
-		// Family stat modifiers are unknown.
-		Health: 1.00,
-		Armor:  1.00,
-		Damage: 1.00,
+		// Client spell 46242 "Tamed Pet Passive (DND) Serpent".
+		Health: 1.03,
+		Armor:  1.01,
+		Damage: 1.06,
 	},
 }

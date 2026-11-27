@@ -53,7 +53,7 @@ stat_weights_results: {
  key: "TestBMHunter-Phase1-StatWeights-Default"
  value: {
   weights: 0
-  weights: 0.73234
+  weights: 0.73725
   weights: 0
   weights: 0
   weights: 0
@@ -70,8 +70,8 @@ stat_weights_results: {
   weights: 0
   weights: 0
   weights: 0
-  weights: 9.96665
-  weights: 9.11483
+  weights: 10.00894
+  weights: 9.18198
   weights: 0
   weights: 0
   weights: 0
@@ -103,294 +103,294 @@ stat_weights_results: {
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-BloodGuard'sChainVices-22862"
  value: {
-  dps: 1257.61473
+  dps: 1240.16993
   tps: 592.18909
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Champion'sPursuance"
  value: {
-  dps: 1229.64568
+  dps: 1212.35292
   tps: 573.56411
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-CryptstalkerArmor"
  value: {
-  dps: 1386.5628
+  dps: 1369.20218
   tps: 665.35581
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-DragonstalkerArmor"
  value: {
-  dps: 1291.28542
+  dps: 1273.90255
   tps: 608.89204
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-FieldMarshal'sPursuit"
  value: {
-  dps: 1290.86244
+  dps: 1273.43567
   tps: 608.37566
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-General'sChainGloves-16571"
  value: {
-  dps: 1270.55241
+  dps: 1253.06435
   tps: 595.95426
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-GiantstalkerArmor"
  value: {
-  dps: 1253.92945
+  dps: 1236.31205
   tps: 593.14466
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Knight-Lieutenant'sChainVices-23279"
  value: {
-  dps: 1257.61473
+  dps: 1240.16993
   tps: 592.18909
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-LieutenantCommander'sPursuance"
  value: {
-  dps: 1229.64568
+  dps: 1212.35292
   tps: 573.56411
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Marshal'sChainGrips-16463"
  value: {
-  dps: 1270.55241
+  dps: 1253.06435
   tps: 595.95426
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Predator'sArmor"
  value: {
-  dps: 1258.73462
+  dps: 1241.19483
   tps: 593.98038
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Renataki'sCharmofBeasts-19953"
  value: {
-  dps: 1262.626
+  dps: 1244.74967
   tps: 594.16525
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Striker'sGarb"
  value: {
-  dps: 1293.28972
+  dps: 1275.65202
   tps: 614.17061
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-TheDefiler'sDetermination"
  value: {
-  dps: 1246.62741
+  dps: 1229.14097
   tps: 588.67453
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-TheHighlander'sDetermination"
  value: {
-  dps: 1246.62741
+  dps: 1229.14097
   tps: 588.67453
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-AllItems-Warlord'sPursuit"
  value: {
-  dps: 1290.86244
+  dps: 1273.43567
   tps: 608.37566
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Average-Default"
  value: {
-  dps: 1270.2036
+  dps: 1252.57935
   tps: 600.87411
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 1363.55203
+  dps: 1347.44374
   tps: 1249.65453
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 1218.49582
+  dps: 1202.5607
   tps: 590.85348
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 1281.40351
+  dps: 1265.68488
   tps: 612.97099
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 633.27019
+  dps: 621.27278
   tps: 686.62735
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 603.73691
+  dps: 591.78439
   tps: 342.73116
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 703.09365
+  dps: 691.24537
   tps: 423.52873
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 1184.16397
+  dps: 1168.42123
   tps: 766.7748
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 1156.68106
+  dps: 1140.84451
   tps: 485.15278
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 1274.57454
+  dps: 1257.75936
   tps: 594.09077
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 605.02121
+  dps: 593.01668
   tps: 606.28174
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 597.73032
+  dps: 585.58291
   tps: 319.94935
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Dwarf-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 679.8812
+  dps: 667.27213
   tps: 376.73626
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 1419.24314
+  dps: 1401.57059
   tps: 1274.51789
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 1276.22015
+  dps: 1258.78688
   tps: 599.09097
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-FullBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 1301.19667
+  dps: 1282.85363
   tps: 606.91075
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 644.14277
+  dps: 631.50202
   tps: 681.36345
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 613.39564
+  dps: 600.59509
   tps: 341.40125
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm-NoBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 710.55225
+  dps: 697.29814
   tps: 418.15474
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 1232.64047
+  dps: 1215.32976
   tps: 774.62262
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 1205.19704
+  dps: 1187.85122
   tps: 497.42622
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-FullBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 1302.0253
+  dps: 1284.34828
   tps: 590.02039
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-LongMultiTarget"
  value: {
-  dps: 619.57587
+  dps: 606.83931
   tps: 608.52565
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-LongSingleTarget"
  value: {
-  dps: 605.82396
+  dps: 593.15515
   tps: 317.40809
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-Settings-Orc-bm_prebis-Hunter-bm_nobuffs-NoBuffs-P1-Consumes-ShortSingleTarget"
  value: {
-  dps: 689.63673
+  dps: 676.84177
   tps: 373.28765
  }
 }
 dps_results: {
  key: "TestBMHunter-Phase1-SwitchInFrontOfTarget-Default"
  value: {
-  dps: 1277.37715
+  dps: 1259.71425
   tps: 599.00869
  }
 }
