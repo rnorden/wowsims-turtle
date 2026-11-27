@@ -19,6 +19,11 @@ const (
 	FuriousHowl
 	LightningBreath
 	ScorpidPoison
+	PoisonSpit
+	SavageRend
+	DeathRoll
+	RoarOfFortitude
+	Thunderstomp
 )
 
 // Bestial Discipline (Turtle 2025-07-25 rework): reduces the cooldown of pet special abilities
@@ -35,14 +40,22 @@ func (hp *HunterPet) NewPetAbility(abilityType PetAbilityType, isPrimary bool) *
 		return hp.newClaw()
 	case Screech:
 		return hp.newScreech()
-	// case FuriousHowl:
-	// 	return hp.newFuriousHowl()
+	case FuriousHowl:
+		return hp.newFuriousHowl()
 	case LightningBreath:
 		return hp.newLightningBreath()
 	case ScorpidPoison:
 		return hp.newScorpidPoison()
-	// case Swipe:
-	// 	return hp.newSwipe()
+	case PoisonSpit:
+		return hp.newPoisonSpit()
+	case SavageRend:
+		return hp.newSavageRend()
+	case DeathRoll:
+		return hp.newDeathRoll()
+	case RoarOfFortitude:
+		return hp.newRoarOfFortitude()
+	case Thunderstomp:
+		return hp.newThunderstomp()
 	case Unknown:
 		return nil
 	default:
@@ -265,52 +278,6 @@ func (hp *HunterPet) newScreech() *core.Spell {
 		},
 	})
 }
-
-// func (hp *HunterPet) newFuriousHowl() *core.Spell {
-// 	actionID := core.ActionID{SpellID: 64495}
-
-// 	petAura := hp.NewTemporaryStatsAura("FuriousHowl", actionID, stats.Stats{stats.AttackPower: 320, stats.RangedAttackPower: 320}, time.Second*20)
-// 	ownerAura := hp.hunterOwner.NewTemporaryStatsAura("FuriousHowl", actionID, stats.Stats{stats.AttackPower: 320, stats.RangedAttackPower: 320}, time.Second*20)
-
-// 	howlSpell := hp.RegisterSpell(core.SpellConfig{
-// 		ActionID: actionID,
-
-// 		FocusCost: core.FocusCostOptions{
-// 			Cost: 20,
-// 		},
-// 		Cast: core.CastConfig{
-// 			CD: core.Cooldown{
-// 				Timer:    hp.NewTimer(),
-// 				Duration: time.Second * 40,
-// 			},
-// 		},
-// 		ExtraCastCondition: func(sim *core.Simulation, target *core.Unit) bool {
-// 			return hp.IsEnabled()
-// 		},
-// 		ApplyEffects: func(sim *core.Simulation, _ *core.Unit, _ *core.Spell) {
-// 			petAura.Activate(sim)
-// 			ownerAura.Activate(sim)
-// 		},
-// 	})
-
-// 	hp.hunterOwner.RegisterSpell(core.SpellConfig{
-// 		ActionID: actionID,
-// 		Flags:    core.SpellFlagAPL | core.SpellFlagMCD,
-// 		ExtraCastCondition: func(sim *core.Simulation, target *core.Unit) bool {
-// 			return howlSpell.CanCast(sim, target)
-// 		},
-// 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, _ *core.Spell) {
-// 			howlSpell.Cast(sim, target)
-// 		},
-// 	})
-
-// 	hp.hunterOwner.AddMajorCooldown(core.MajorCooldown{
-// 		Spell: howlSpell,
-// 		Type:  core.CooldownTypeDPS,
-// 	})
-
-// 	return nil
-// }
 
 func (hp *HunterPet) newScorpidPoison() *core.Spell {
 	// Client tick values (bp+1); Turtle raised base damage by 20% server-side (2024-10-12).

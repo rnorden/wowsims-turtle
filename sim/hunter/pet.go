@@ -16,11 +16,11 @@ type HunterPet struct {
 
 	hunterOwner *Hunter
 
-	specialAbility *core.Spell
-	focusDump      *core.Spell
+	specialAbility   *core.Spell
+	secondaryAbility *core.Spell
+	focusDump        *core.Spell
 
-	uptimePercent    float64
-	hasOwnerCooldown bool
+	uptimePercent float64
 }
 
 func (hunter *Hunter) NewHunterPet() *HunterPet {
@@ -78,8 +78,6 @@ func (hunter *Hunter) NewHunterPet() *HunterPet {
 		Pet:         core.NewPet(petConfig.Name, &hunter.Character, hunterPetBaseStats, hunter.makeStatInheritance(), true, false),
 		config:      petConfig,
 		hunterOwner: hunter,
-
-		hasOwnerCooldown: petConfig.SpecialAbility == FuriousHowl,
 	}
 
 	hp.Pet.MobType = petConfig.MobType
@@ -120,6 +118,7 @@ func (hp *HunterPet) GetPet() *core.Pet {
 
 func (hp *HunterPet) Initialize() {
 	hp.specialAbility = hp.NewPetAbility(hp.config.SpecialAbility, true)
+	hp.secondaryAbility = hp.NewPetAbility(hp.config.SecondaryAbility, false)
 	hp.focusDump = hp.NewPetAbility(hp.config.FocusDump, false)
 
 	hp.EnableFocusBar(1, func(sim *core.Simulation) {
@@ -137,12 +136,6 @@ func (hp *HunterPet) ExecuteCustomRotation(sim *core.Simulation) {
 	percentRemaining := sim.GetRemainingDurationPercent()
 	if percentRemaining < 1.0-hp.uptimePercent { // once fight is % completed, disable pet.
 		hp.Disable(sim)
-		return
-	}
-
-	if hp.hasOwnerCooldown && hp.CurrentFocus() < 50 {
-		// When a major ability (Furious Howl or Savage Rend) is ready, pool enough
-		// energy to use on-demand.
 		return
 	}
 
@@ -175,8 +168,14 @@ func (hp *HunterPet) ExecuteCustomRotation(sim *core.Simulation) {
 	if hp.config.CustomRotation != nil {
 		hp.config.CustomRotation(sim, hp, tryCast)
 	} else {
+		// Priority: special ability, then the secondary ability, then the focus dump. An ability that is
+		// off cooldown but unaffordable makes the pet pool focus for it.
 		if hp.specialAbility.IsReady(sim) {
 			if !tryCast(hp.specialAbility) && hp.GCD.IsReady(sim) {
+				hp.WaitUntil(sim, sim.CurrentTime+time.Millisecond*500)
+			}
+		} else if hp.secondaryAbility != nil && hp.secondaryAbility.IsReady(sim) {
+			if !tryCast(hp.secondaryAbility) && hp.GCD.IsReady(sim) {
 				hp.WaitUntil(sim, sim.CurrentTime+time.Millisecond*500)
 			}
 		} else if hp.focusDump.IsReady(sim) {
@@ -205,8 +204,9 @@ type PetConfig struct {
 	Name    string
 	MobType proto.MobType
 
-	SpecialAbility PetAbilityType
-	FocusDump      PetAbilityType
+	SpecialAbility   PetAbilityType
+	SecondaryAbility PetAbilityType // optional, used between the special ability and the focus dump
+	FocusDump        PetAbilityType
 
 	Health float64
 	Armor  float64
@@ -228,18 +228,6 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Health: 0.98,
 		Armor:  1.00,
 		Damage: 1.10,
-
-		CustomRotation: func(sim *core.Simulation, hp *HunterPet, tryCast func(*core.Spell) bool) {
-			if hp.specialAbility.CD.IsReady(sim) && hp.CurrentFocusPerSecond() > hp.focusDump.Cost.BaseCost/1.6 {
-				if !tryCast(hp.specialAbility) && hp.GCD.IsReady(sim) {
-					hp.WaitUntil(sim, sim.CurrentTime+time.Millisecond*500)
-				}
-			} else {
-				if !tryCast(hp.focusDump) && hp.GCD.IsReady(sim) {
-					hp.WaitUntil(sim, sim.CurrentTime+time.Millisecond*500)
-				}
-			}
-		},
 	},
 	proto.Hunter_Options_WindSerpent: {
 		Name:    "Wind Serpent",
@@ -279,8 +267,9 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Bear",
 		MobType: proto.MobType_MobTypeBeast,
 
-		SpecialAbility: Bite,
-		FocusDump:      Claw,
+		SpecialAbility:   RoarOfFortitude,
+		SecondaryAbility: Bite,
+		FocusDump:        Claw,
 
 		Health: 1.08,
 		Armor:  1.05,
@@ -301,8 +290,9 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Carrion Bird",
 		MobType: proto.MobType_MobTypeBeast,
 
-		SpecialAbility: Bite, // Screech
-		FocusDump:      Claw,
+		SpecialAbility:   Bite,
+		SecondaryAbility: Screech,
+		FocusDump:        Claw,
 
 		Health: 1.00,
 		Armor:  1.05,
@@ -333,7 +323,8 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Crocolisk",
 		MobType: proto.MobType_MobTypeBeast,
 
-		FocusDump: Bite,
+		SpecialAbility: DeathRoll,
+		FocusDump:      Bite,
 
 		Health: 0.95,
 		Armor:  1.10,
@@ -343,8 +334,8 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Gorilla",
 		MobType: proto.MobType_MobTypeBeast,
 
-		// SpecialAbility: Thunderstomp,
-		FocusDump: Bite,
+		SpecialAbility: Thunderstomp,
+		FocusDump:      Bite,
 
 		Health: 1.04,
 		Armor:  1.00,
@@ -364,8 +355,9 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Raptor",
 		MobType: proto.MobType_MobTypeBeast,
 
-		SpecialAbility: Bite,
-		FocusDump:      Claw,
+		SpecialAbility:   Bite,
+		SecondaryAbility: SavageRend,
+		FocusDump:        Claw,
 
 		Health: 0.95,
 		Armor:  1.03,
@@ -431,11 +423,26 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Wolf",
 		MobType: proto.MobType_MobTypeBeast,
 
-		// SpecialAbility: FuriousHowl,
-		FocusDump: Bite,
+		// Bite first: with only the hunter and pet in the party, Howl-first loses ~20 DPS. Howl's value
+		// grows with each physical-damage party member, which a raid sim credits to them.
+		SpecialAbility: Bite,
+		FocusDump:      FuriousHowl,
 
 		Health: 1.00,
 		Armor:  1.05,
+		Damage: 1.00,
+	},
+	// Turtle family (1.17.2). Learns Poison Spit and Bite.
+	proto.Hunter_Options_Serpent: {
+		Name:    "Serpent",
+		MobType: proto.MobType_MobTypeBeast,
+
+		SpecialAbility: PoisonSpit,
+		FocusDump:      Bite,
+
+		// Family stat modifiers are unknown.
+		Health: 1.00,
+		Armor:  1.00,
 		Damage: 1.00,
 	},
 }
