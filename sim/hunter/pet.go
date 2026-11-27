@@ -312,8 +312,8 @@ var PetConfigs = map[proto.Hunter_Options_PetType]PetConfig{
 		Name:    "Owl",
 		MobType: proto.MobType_MobTypeBeast,
 
-		//SpecialAbility: Screech,
-		FocusDump: Claw,
+		SpecialAbility: Screech,
+		FocusDump:      Claw,
 
 		Health: 1.00,
 		Armor:  1.00,

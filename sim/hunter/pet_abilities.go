@@ -21,6 +21,12 @@ const (
 	ScorpidPoison
 )
 
+// Bestial Discipline (Turtle 2025-07-25 rework): reduces the cooldown of pet special abilities
+// by 10/20% (client spell 19592 effect 2: -20% SPELLMOD_COOLDOWN).
+func (hp *HunterPet) specialAbilityCooldown(base time.Duration) time.Duration {
+	return time.Duration(float64(base) * (1 - 0.1*float64(hp.hunterOwner.Talents.BestialDiscipline)))
+}
+
 func (hp *HunterPet) NewPetAbility(abilityType PetAbilityType, isPrimary bool) *core.Spell {
 	switch abilityType {
 	case Bite:
@@ -89,7 +95,8 @@ func (hp *HunterPet) newClaw() *core.Spell {
 		BonusCoefficient: 1,
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
-			baseDamage := sim.Roll(baseDamageMin, baseDamageMax)
+			// Turtle: +1 damage per 42 pet attack power.
+			baseDamage := sim.Roll(baseDamageMin, baseDamageMax) + spell.MeleeAttackPower(target)/42
 			spell.CalcAndDealDamage(sim, target, baseDamage, spell.OutcomeMeleeSpecialHitAndCrit)
 		},
 	})
@@ -107,7 +114,7 @@ func (hp *HunterPet) newBite() *core.Spell {
 		25: 37,
 		40: 59,
 		50: 80,
-		60: 91,
+		60: 99,
 	}[hp.Owner.Level]
 
 	spellID := map[int32]int32{
@@ -134,7 +141,7 @@ func (hp *HunterPet) newBite() *core.Spell {
 			},
 			CD: core.Cooldown{
 				Timer:    hp.NewTimer(),
-				Duration: 10 * time.Second,
+				Duration: hp.specialAbilityCooldown(6 * time.Second), // Turtle: 10s -> 6s
 			},
 			IgnoreHaste: true,
 		},
@@ -144,7 +151,8 @@ func (hp *HunterPet) newBite() *core.Spell {
 		BonusCoefficient: 1,
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
-			baseDamage := sim.Roll(baseDamageMin, baseDamageMax)
+			// Turtle: +1 damage per 20 pet attack power.
+			baseDamage := sim.Roll(baseDamageMin, baseDamageMax) + spell.MeleeAttackPower(target)/20
 			spell.CalcAndDealDamage(sim, target, baseDamage, spell.OutcomeMeleeSpecialHitAndCrit)
 		},
 	})
@@ -191,7 +199,7 @@ func (hp *HunterPet) newLightningBreath() *core.Spell {
 
 		DamageMultiplier: 1,
 		ThreatMultiplier: 1,
-		BonusCoefficient: 1,
+		BonusCoefficient: 0.5, // Turtle: 0.5 spell power (pet spell power comes from Spirit Bond)
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
 			baseDamage := sim.Roll(baseDamageMin, baseDamageMax)
@@ -217,10 +225,10 @@ func (hp *HunterPet) newScreech() *core.Spell {
 	}[hp.Owner.Level]
 
 	spellID := map[int32]int32{
-		15: 24580,
-		40: 24580,
-		50: 24581,
-		60: 24582,
+		25: 24577,
+		40: 24577,
+		50: 24578,
+		60: 24579,
 	}[hp.Owner.Level]
 
 	return hp.RegisterSpell(core.SpellConfig{
@@ -238,14 +246,20 @@ func (hp *HunterPet) newScreech() *core.Spell {
 			DefaultCast: core.Cast{
 				GCD: PetGCD,
 			},
+			CD: core.Cooldown{
+				Timer:    hp.NewTimer(),
+				Duration: hp.specialAbilityCooldown(5 * time.Second), // Turtle: 5s cooldown
+			},
 			IgnoreHaste: true,
 		},
 
 		DamageMultiplier: 1,
 		ThreatMultiplier: 1,
+		BonusCoefficient: 1,
 
 		ApplyEffects: func(sim *core.Simulation, target *core.Unit, spell *core.Spell) {
-			baseDamage := sim.Roll(baseDamageMin, baseDamageMax)
+			// Turtle: +1 damage per 25 pet attack power.
+			baseDamage := sim.Roll(baseDamageMin, baseDamageMax) + spell.MeleeAttackPower(target)/25
 			// This ability also applies a melee attack power reduction similar to demoralizing shout - left it out for now
 			spell.CalcAndDealDamage(sim, target, baseDamage, spell.OutcomeMeleeSpecialHitAndCrit)
 		},
@@ -299,7 +313,8 @@ func (hp *HunterPet) newScreech() *core.Spell {
 // }
 
 func (hp *HunterPet) newScorpidPoison() *core.Spell {
-	baseDamageTick := map[int32]float64{
+	// Client tick values (bp+1); Turtle raised base damage by 20% server-side (2024-10-12).
+	baseDamageTick := 1.2 * map[int32]float64{
 		25: 3,
 		40: 6,
 		50: 6,
@@ -321,7 +336,7 @@ func (hp *HunterPet) newScorpidPoison() *core.Spell {
 		Flags:       core.SpellFlagPassiveSpell | core.SpellFlagPoison,
 
 		FocusCost: core.FocusCostOptions{
-			Cost: 30,
+			Cost: 25, // Turtle: 30 -> 25
 		},
 		Cast: core.CastConfig{
 			DefaultCast: core.Cast{
@@ -330,7 +345,7 @@ func (hp *HunterPet) newScorpidPoison() *core.Spell {
 			IgnoreHaste: true,
 			CD: core.Cooldown{
 				Timer:    hp.NewTimer(),
-				Duration: time.Second * 4,
+				Duration: hp.specialAbilityCooldown(time.Second * 3), // Turtle: 4s -> 3s
 			},
 		},
 
@@ -358,7 +373,8 @@ func (hp *HunterPet) newScorpidPoison() *core.Spell {
 					dot.SnapshotBaseDamage = 0
 				}
 
-				dot.SnapshotBaseDamage += baseDamageTick
+				// Turtle: 0.1 spell power per periodic tick, per stack.
+				dot.SnapshotBaseDamage += baseDamageTick + 0.1*dot.Spell.GetBonusDamage(target)
 			},
 			OnTick: func(sim *core.Simulation, target *core.Unit, dot *core.Dot) {
 				dot.CalcAndDealPeriodicSnapshotDamage(sim, target, dot.OutcomeTick)

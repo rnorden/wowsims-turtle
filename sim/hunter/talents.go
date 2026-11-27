@@ -33,6 +33,8 @@ func (hunter *Hunter) applyBeastMasteryTalents() {
 		pet.AddStat(stats.SpellHit, 9*float64(hunter.Talents.BestialPrecision)*core.SpellHitRatingPerHitChance)
 	}
 
+	// Bestial Discipline: +2/+5 pet focus per regen tick (approximated as +10/20% of the sim's
+	// 26.25-focus tick). The 10/20% special-ability cooldown cut is in HunterPet.specialAbilityCooldown.
 	if hunter.Talents.BestialDiscipline > 0 {
 		core.MakePermanent(hunter.RegisterAura(core.Aura{
 			Label: "Bestial Discipline",
